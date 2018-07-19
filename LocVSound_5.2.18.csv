@@ -1,0 +1,20 @@
+﻿Bat ID,Scorer,Date,Time, Species,Test,Rewarded_loc,Rewarded_sound,first_hover,first_land,first_visit,lands_loc,hovers_loc,visits_loc,lands_sound,hovers_sound,visits_sound,lands_neither,hovers_neither,visits_neither,lands_nearest,hovers_nearest,visits_nearest,lands_alpha,hovers_alpha,visits_alpha,lands_beta,hovers_beta,visits_beta,lands_feta,hovers_feta,visits_feta,lands_epsilon,hovers_epsilon,visits_epsilon,total_lands,total_hovers,total_visits,pct_visits_loc,pct_visits_sound,pct_visits_neither,pct_visits_nearest
+A-C095,unknown,4/1/17,1,AJ,LocVSound,"4,2",epsilon,location,location,location,1,10,11,0,0,0,0,1,1,0,1,1,NA,NA,NA,0,1,1,1,10,11,0,0,0,1,11,12,0.92,0.00,0.08,0.08
+D-C0B6,unknown,4/2/17,23:45,AJ,LocVSound,"4,3",epsilon,neither,location,,5,1,6,0,0,0,0,5,5,NA,NA,NA,NA,NA,NA,5,1,6,0,5,5,0,0,0,5,6,11,0.55,0.00,0.45,NA
+K-C091,May,4/30/17,21:47,AJ,LocVSound,"3,3",feta,location,NA,location,0,13,13,0,1,1,0,5,5,0,0,0,0,5,5,NA,NA,NA,0,1,1,0,13,13,0,19,19,0.68,0.00,0.26,0.00
+B-Butt,Dylan,7/1/17,21:37,L,LocVSound,"3,1",feta,location,location,location,0,5,5,0,0,0,0,0,0,0,1,1,0,5,5,NA,NA,NA,0,1,1,0,0,0,0,5,6,0.83,0.00,0.00,0.17
+C-Newbie,Dylan,7/1/17,19:12,L,LocVSound,"3,2",feta,location,location,location,15,7,22,0,0,0,0,0,0,NA,NA,NA,0,0,0,15,7,22,0,0,0,0,0,0,15,7,22,1.00,0.00,0.00,NA
+Cracker_Jacks,May,5/28/17,NA,T,LocVSound,"4,2",sassafrass,location,location,location,4,0,4,0,0,0,1,0,1,1,0,1,4,0,4,NA,NA,NA,1,0,1,0,0,0,5,0,5,0.80,0.00,0.20,0.20
+B-C09E,Dylan,4/5/17,19:41,AJ,LocVSound,"4,2",epsilon,NA ,NA,NA,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,NA,NA,NA,NA
+Lireal,unknown,7/27/17,20:58,L,LocVSound,"4,2",epsilon,location,location,location,6,17,23,2,7,9,4,2,6,4,2,6,4,2,6,NA,NA,NA,6,17,23,2,7,9,12,26,38,0.61,0.05,0.16,0.16
+Bartameus,unknown,7/26/17,20:32,L,LocVSound,"4,2",epsilon,location,location,location,3,6,9,0,0,0,0,0,0,0,0,0,0,0,0,NA,NA,0,3,6,9,0,0,0,3,6,9,1.00,0.00,0.00,0.00
+I-C0BF,Vanessa,4/20/17,1:55,AJ,LocVSound,"3,3",feta,location,NA,location,0,16,16,0,4,4,0,11,11,0,4,4,NA,NA,NA,0,11,11,0,4,4,0,16,16,0,31,31,0.52,0.00,0.35,0.13
+Shostakovich,Vanessa,9/21/17,19:20,L,LocVSound,"1,3",beta,location,location,location,10,33,43,0,8,8,0,6,6,0,8,8,0,6,6,0,8,8,NA,NA,NA,10,33,43,10,47,57,0.75,0.00,0.11,0.14
+Beethoven,Vanessa,9/21/17,20:45,L,LocVSound,"1,3",beta,location,neither,neither,20,11,31,2,4,6,1,1,2,2,4,6,20,11,31,2,4,6,NA,NA,NA,1,1,2,23,16,39,0.79,0.05,0.05,0.15
+Mozart,Dineilys,9/23/17,22:05,L,LocVSound,"1,3",beta,sound,NA,sound,0,2,2,0,1,1,0,0,0,0,0,0,0,2,2,0,1,1,NA,NA,0,0,0,0,0,3,3,0.67,0.00,0.00,0.00
+E-C07C,Vanessa,4/2/17,3:16,AJ,LocVSound,"4,2",epsilon,location,location,location,4,17,21,0,8,8,0,7,7,0,8,8,NA,NA,NA,4,17,21,0,7,7,0,8,8,4,32,36,0.58,0.00,0.19,0.22
+G-C09B,Vanessa,4/2/17,19:42,AJ,LocVSound,"3,3",feta,location,NA,location,0,6,6,0,0,0,0,0,0,0,0,0,0,6,6,0,0,0,0,0,0,NA,NA,NA,0,6,6,1.00,0.00,0.00,0.00
+Whitey,Vanessa,10/17/17,20:59,L,LocVSound,"3,1",alpha,neither,location,neither,1,0,1,0,0,0,0,1,1,NA,NA`,NA,0,0,0,1,0,1,0,1,1,NA,NA,NA,1,1,2,0.50,0.00,0.50,NA
+H-C055,Vanessa,5/1/17,0:38,AJ,LocVSound,"3,3",feta,location,NA,location,0,7,7,0,15,15,0,5,5,NA,NA,NA,0,5,5,NA,NA,NA,0,15,15,0,7,7,0,27,27,0.26,0.00,0.19,NA
+J-C090,Vanessa,4/2/17,22:15,L,LocVSound,"3,3",feta,neither,NA,neither,0,12,12,0,8,8,0,9,9,0,8,8,0,12,12,NA,NA,NA,0,8,8,0,9,9,0,29,29,0.41,0.00,0.31,0.28
+Handel,Dineilys,10/17/17,20:38,L,LocVSound,"3,1",alpha,location,"neither, nearest","neither, nearest",24,9,33,0,0,0,1,0,1,1,0,1,0,0,0,1,0,1,24,9,33,NA,NA,NA,25,9,34,0.97,0.00,0.03,0.03
