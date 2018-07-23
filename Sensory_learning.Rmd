@@ -180,6 +180,7 @@ LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = "L
 LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSound_bar
 
+ggsave("LocVSound", device = png)
 ```
 #rm(LocVSound_bar)
 
