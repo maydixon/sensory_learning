@@ -9,22 +9,230 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Sensory learning
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## packages
+```{r}
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(dunn.test)
+library(FSA)
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+```{r}
+## TO DO: DELETE Trachops from datasheet
+## Fill in first visits, make simply neither OR nearest, not both
+## Remove nearest?
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Import data 
+```{r}
+LocVSound <- read.csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSound_5.2.18.csv")
+View(LocVSound)
+
+## make a subset with only lophos and AJs, remove Trachops as factor level
+LocVSound_AJ_L= subset(LocVSound, LocVSound$Species != "T")
+View(LocVSound_AJ_L)
+LocVSound_AJ_L$Species<- factor(LocVSound_AJ_L$Species)
+
+#levels(LocVSound_AJ_L$Species)
+```
+
+SUMMARIZING AVERAGE proportion of visits to each cue
+```{r}
+#  summarize average visits per species using dplyr
+#  summarize number
+#  seperate out the species
+#look at histograms of responses
+#  run kruskal wallace? Anova with percents? 
+#  Make graphs: percentage choices for each species
+# 
+
+Avg_visits<-LocVSound_AJ_L %>% group_by(Species) %>%
+      summarise(avg_loc = mean(pct_visits_loc, na.rm=TRUE), avg_sound = mean(pct_visits_sound, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE) )
+Avg_visits
+class(Avg_visits)
+
+
+
+
+#use summaries to make Chi squared values, athen expected values
+
+```
+
+
+
+
+##STATS
+
+
+```{r}
+## basically assessing normality
+hist(LocVSound_AJ_L$pct_visits_sound[LocVSound_AJ_L$Species=="L"], breaks=6)
+
+#not particularly normal
+head(LocVSound_AJ_L)
+```
+
+
+
+Do AJs go to one platform more than another? 
+Do Lophostoma go to any platforms more than one another? 
+Which? 
+Is there a difference between AJs and lophostoma? (anova? )
+
+Reshape data for plotting and manipulation
+```{r}
+# pull out just the relevent columns: 
+LocVSound_AJ_L_pcts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither", "pct_visits_nearest")]
+head(LocVSound_AJ_L_pcts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
+colnames(LocVSound_AJ_L_pcts)
+
+mLocVSound <- melt(LocVSound_AJ_L_pcts, id=c("Bat.ID","Species"))
+head(mLocVSound)
+#rm(mLocVSound )
+```
+
+
+## Kruskal-wallace: 
+" Did the bats fly to the three platforms the same amount?"
+AJS
+```{r}
+SoundVSmell_AJ_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="AJ", ] )
+
+SoundVSmell_AJ_k.test
+```
+Significant difference, so post-hocs
+
+Lophos
+```{r}
+SoundVSmell_L_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="L", ] )
+
+SoundVSmell_L_k.test
+```
+Significant difference, so post-hocs
+
+##Man- Whitney / Wilcox
+"Which platforms did the bats fly to more, which were different?"
+
+AJs
+```{r}
+
+SoundVSmell_AJ_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, p.adjust.method=p.adjust.methods)
+SoundVSmell_AJ_wilhox
+```
+
+Lophos
+```{r}
+
+SoundVSmell_L_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, p.adjust.method=p.adjust.methods)
+SoundVSmell_L_wilhox
+```
+
+##Dunn test post hoc
+
+AJ
+```{r}
+
+SoundVSmell_AJ_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, method="holm", kw=TRUE)
+SoundVSmell_AJ_dunn
+
+```
+
+Lopho
+```{r}
+
+SoundVSmell_L_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, method="holm", kw=TRUE)
+SoundVSmell_L_dunn
+
+```
+
+
+Nemenyi or Zar or Mann-Whitney tests for post hoc analyses?
+```{r}
+
+```
+
+Plotting
+
+
+
+
+Plotting % of visits to the different platforms
+
+```{r}
+LocVSound_bar <- ggplot(data =mLocVSound, aes(x = variable, y = value))
+LocVSound_bar <- LocVSound_bar + geom_boxplot(aes(fill=Species))
+LocVSound_bar <- LocVSound_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSound_bar <- LocVSound_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSound_bar <- LocVSound_bar + xlab("Cues")
+LocVSound_bar <- LocVSound_bar + ylab("Proportion of total visits")
+LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar
+
+```
+#rm(LocVSound_bar)
+
+
+##First choices/ visits by species
+
+clean data
+```{r}
+## Think about figuring out how to incorperate 'nearest'
+## Take out rows with weird values for first visit
+LocVSound_fc= subset(LocVSound, LocVSound$first_visit != "" & LocVSound$first_visit != "neither, nearest")
+LocVSound_fc$first_visit<- factor(LocVSound_fc$first_visit)
+View(LocVSound_fc)
+levels(LocVSound_fc$first_visit)
+```
+
+Make new data frame with summary data
+```{r}
+# This does the same thing, but makes a new dataframe to do it
+#summarize occurances
+first_visits <- as.data.frame(table(LocVSound_fc$first_visit, LocVSound_fc$Species)) #summarized by species into table
+
+# first_visits <- dcast(first_visits, Var1~Var2 ) #reshapes into the appropriate format
+
+names(first_visits)<- c("Cue", "Species", "Visits")
+## For plotting purposes, need to replace 0's with a small number, not meaningful
+ first_visits_fp <- first_visits #first visits for plot
+ first_visits_fp[first_visits_fp == 0] <- 0.03 
+ 
+ #reorder factor
+ first_visits_fp$Cue<- factor(first_visits_fp$Cue, levels = c("location", "sound", "neither"))
+View(first_visits_fp)
+
+```
+
+
+Plot first visits
+```{r}
+First_visits_p <- ggplot(data =first_visits_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("location" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_p  <- First_visits_p  + xlab("Cues")
+First_visits_p  <- First_visits_p  + ylab("Total visits")
+First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+
+First_visits_p
+
+  
+ # rm(First_visits_p)
+```
+
+
+
