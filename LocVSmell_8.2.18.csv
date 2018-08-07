@@ -1,21 +1,21 @@
-﻿Bat ID,Scorer,Date,Time, Species,Treatment,Rewarded_loc,Rewarded_smell,first_hover,first_land,first_visit,lands_loc,hovers_loc,visits_loc,lands_smell,hovers_smell,visits_smell,lands_neither,hovers_neither,visits_neither,visits_nearest,visits_sassafras,visits_almond,visits_cinnamon,visits_anise,total_lands,total_hovers,total_visits,pct_visits_loc,pct_visits_smell,pct_visits_neither,pct_visits_nearest
+﻿Bat_ID,Scorer,Date,Time, Species,Treatment,Rewarded_loc,Rewarded_smell,first_hover,first_land,first_visit,lands_loc,hovers_loc,visits_loc,lands_smell,hovers_smell,visits_smell,lands_neither,hovers_neither,visits_neither,visits_nearest,visits_sassafras,visits_almond,visits_cinnamon,visits_anise,total_lands,total_hovers,total_visits,pct_visits_loc,pct_visits_smell,pct_visits_neither,pct_visits_nearest
 A-C095,unknown,3/30/17,23:56,AJ,LocVSmell,"4,2",sasafrass,location,NA,,0,4,4,0,2,2,0,0,0,,2,NA,0,4,0,6,6,0.666666667,0.333333333,0,0
 D-C0B6,unknown,3/31/17,22:29,AJ,LocVSmell,"4,2",sasafrass,location,NA,,0,2,2,0,0,0,0,0,0,,0,0,2,0,0,2,2,1,0,0,0
 C-C09A,unknown,4/1/17,NA,AJ,LocVSmell,"4,2",sasafrass,location,location,location,3,15,18,0,4,4,0,2,2,,4,NA,18,4,3,21,26,0.692307692,0.153846154,0.076923077,0
 L-C07F,unknown,4/30/17,23:13,AJ,LocVSmell,"3,3",cinnamon,location,NA,,0,14,14,0,5,5,0,5,5,,5,14,5,NA,0,24,24,0.583333333,0.208333333,0.208333333,0
+B-C09E,unknown,4/6/17,19:36,AJ,LocVSmell,"4,2",sasafrass,NA,NA,NA,0,0,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,NA,NA,NA,NA
+F-C0C0,unknown,4/6/17,21:02,AJ,LocVSmell,"4,2",sasafrass,NA,NA,NA,0,0,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,NA,NA,NA,NA
+E-C07C,Vanessa,4/3/17,22:31,AJ,LocVSmell,"4,2",sasafrass,location,smell,location,2,18,20,2,12,14,0,3,3,,14,20,NA,3,4,33,37,0.540540541,0.378378378,0.081081081,0
+G-C09B,Vanessa,5/1/17,1:40,AJ,LocVSmell,"3,3",cinnamon,location,NA,location,0,5,5,0,2,2,0,4,4,,4,5,2,NA,0,11,11,0.454545455,0.181818182,0.363636364,0
+H-C055,Vanessa,4/2/17,23:30,AJ,LocVSmell,"3,3",cinnamon,location,NA,location,0,10,10,0,8,8,0,6,6,8,6,10,8,NA,0,24,24,0.416666667,0.333333333,0.25,0.333333333
+I-C0BF,Vanessa,4/2/17,21:01,AJ,,"3,3",cinnamon,"neither, nearest",NA,"neither, nearest",0,6,6,0,15,15,0,8,8,0,8,NA,15,6,0,29,29,0.206896552,0.517241379,0.275862069,0
 A-Head,Dylan,7/3/17,19:11,L,LocVSmell,"3,1",cinnamon,location,location,location,19,15,34,3,3,6,0,0,0,,NA,34,6,0,22,18,40,0.85,0.15,0,0
 B-Butt,Dylan,6/30/17,19:30,L,LocVSmell,"3,1",cinnamon,location,location,location,19,6,25,0,0,0,4,0,4,,4,NA,0,25,23,6,29,0.862068966,0,0.137931034,0
 C-Newbie,Dylan,6/29/17,NA,L,LocVSmell,"3,1",cinnamon,location,location,location,18,15,33,19,0,19,9,7,16,,NA,33,19,16,46,22,68,0.485294118,0.279411765,0.235294118,0
-B-C09E,unknown,4/6/17,19:36,AJ,LocVSmell,"4,2",sasafrass,NA,NA,NA,0,0,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,NA,NA,NA,NA
-F-C0C0,unknown,4/6/17,21:02,AJ,LocVSmell,"4,2",sasafrass,NA,NA,NA,0,0,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,NA,NA,NA,NA
 Lireal,unknown,7/26/17,19:17,L,LocVSmell,"4,2",sasafrass,location,location,location,4,25,29,0,3,3,0,0,0,,3,0,NA,29,4,28,32,0.90625,0.09375,0,0
 Mozart,Vanessa,9/21/17,20:45,L,LocVSmell,"1,3",almond,neither,neither,neither,0,10,10,0,5,5,21,15,36,,NA,3,36,10,21,30,49,0.204081633,0.102040816,0.734693878,0
 Beethoven,Vanessa,9/22/17,19:34,L,LocVSmell,"1,3",almond,location,location,location,10,23,33,0,0,0,0,0,0,,NA,0,0,33,10,23,33,1,0,0,0
 Shostakovich,Dineilys,9/23/17,19:18,L,LocVSmell,"1,3",almond,location,location,location,5,11,16,0,0,0,0,0,0,,16,0,NA,0,5,11,16,1,0,0,0
-Bartameus,Vanessa,7/28/17,20:48,L,LocVSmell,"4,2",sasafrass,neither,location,hover,8,11,19,0,3,3,0,13,13,,3,19,NA,13,8,27,35,0.542857143,0.085714286,0.371428571,0
-E-C07C,Vanessa,4/3/17,22:31,AJ,LocVSmell,"4,2",sasafrass,location,smell,location,2,18,20,2,12,14,0,3,3,,14,20,NA,3,4,33,37,0.540540541,0.378378378,0.081081081,0
-G-C09B,Vanessa,5/1/17,1:40,AJ,LocVSmell,"3,3",cinnamon,location,NA,location,0,5,5,0,2,2,0,4,4,,4,5,2,NA,0,11,11,0.454545455,0.181818182,0.363636364,0
+Bartameus,Vanessa,7/28/17,20:48,L,LocVSmell,"4,2",sasafrass,neither,location,neither,8,11,19,0,3,3,0,13,13,,3,19,NA,13,8,27,35,0.542857143,0.085714286,0.371428571,0
 Handel,Vanessa,10/16/17,19:35,L,LocVSmell,"3,1",anise,neither,location,location,42,13,55,4,2,6,20,22,42,42,NA,55,42,6,66,37,103,0.533980583,0.058252427,0.40776699,0.40776699
 Whitey,Vanessa,10/18/17,20:20,L,LocVSmell,"3,1",anise,location,location,location,7,5,12,0,0,0,0,0,0,0,0,NA,12,0,7,5,12,1,0,0,0
-H-C055,Vanessa,4/2/17,23:30,AJ,LocVSmell,"3,3",cinnamon,location,NA,location,0,10,10,0,8,8,0,6,6,8,6,10,8,NA,0,24,24,0.416666667,0.333333333,0.25,0.333333333
-I-C0BF,Vanessa,4/2/17,21:01,AJ,,"3,3",cinnamon,"neither, nearest",NA,"neither, nearest",0,6,6,0,15,15,0,8,8,0,8,NA,15,6,0,29,29,0.206896552,0.517241379,0.275862069,0

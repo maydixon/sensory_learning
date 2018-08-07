@@ -2,43 +2,86 @@
 title: "Sensory_learning"
 author: "may"
 date: "July 19, 2018"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-## Sensory learning
+#Sensory learning
 
 ## packages
 ```{r}
 library(dplyr)
 library(ggplot2)
 library(reshape2)
-library(dunn.test)
-library(FSA)
-
+library(dunn.test) #dunn test
+library(FSA) #alternative dunn test
+library(EMT) #exact multinomial test
+library(boot)
+library(readr)
 ```
 
 ```{r}
-## TO DO: DELETE Trachops from datasheet
-## Fill in first visits, make simply neither OR nearest, not both
-## Remove nearest?
+## TO DO: 
+
+## Fill in first visits, make simply neither OR nearest, not both: make only sound v smell include nearest? Make data include that. 
+
+## Remove nearest??
+
+## do GLMM
+
+## revise colors of plots: blue and green?
+
+#remove trachops?
+
+## Get basic plots out
+## Make powerpoint with that story
+## Update plots with new data
+## Recolor plots into powerpoint theme
+## Ask Rachel for nicer vectored versions of the plots she sent
+## Add first visits if time
 
 
+
+
+
+## Then could LATER compare the total visits accross the three trial types (make trial order a random variable)
 
 ```
+
+
+################################################################################
+
+# Import data
+
+```{r}
+LocVSound <- read.csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSound_08.06.18.csv")
+
+SoundVSmell <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/SoundVSmell_08.06.18.csv")
+
+LocVSmell <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSmell_08.06.18.csv")
+
+first_choices <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/first_response_08.06.08.csv")
+first_choices <- subset(first_choices, first_choices$Species != "T") # no Trachops
+first_choices$first_visit <- factor(first_choices$first_visit, levels = c("location", "sound", "smell", "neither", "nearest"))
+
+```
+
+
+
+#LOC V SOUND
 
 ## Import data 
 ```{r}
-LocVSound <- read.csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSound_5.2.18.csv")
-View(LocVSound)
+
+head(LocVSound)
 
 ## make a subset with only lophos and AJs, remove Trachops as factor level
+
 LocVSound_AJ_L= subset(LocVSound, LocVSound$Species != "T")
-View(LocVSound_AJ_L)
+##View(LocVSound_AJ_L)
 LocVSound_AJ_L$Species<- factor(LocVSound_AJ_L$Species)
 
 #levels(LocVSound_AJ_L$Species)
@@ -54,24 +97,38 @@ SUMMARIZING AVERAGE proportion of visits to each cue
 #  Make graphs: percentage choices for each species
 # 
 
-Avg_visits<-LocVSound_AJ_L %>% group_by(Species) %>%
-      summarise(avg_loc = mean(pct_visits_loc, na.rm=TRUE), avg_sound = mean(pct_visits_sound, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE) )
-Avg_visits
-class(Avg_visits)
+Avg_pct_visits<-LocVSound_AJ_L %>% group_by(Species) %>%
+      summarise(avg_sound = mean(pct_visits_sound, na.rm=TRUE), avg_sound = mean(pct_visits_sound, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE) )
+Avg_pct_visits
 
 
 
+ 
 
-#use summaries to make Chi squared values, athen expected values
+```
+
+SUMMARIZING AVERAGE number of of visits overall, per species
+```{r}
+### Can also look at the absolute number of times that a given species visits or lands on a platform (total visits)
+## summary of the mean of the total visits / species mean of the total lands / species, mean of the total hovers/ species
+
+
+Avg_visits_spc<-LocVSound_AJ_L %>% group_by(Species) %>%
+      summarise(avg_vis = mean(total_visits, na.rm=TRUE), sd_vis = sd(total_visits), avg_lands = mean(total_lands, na.rm=TRUE), sd_lands = sd(total_lands), avg_hovers = mean(total_hovers, na.rm=TRUE), sd_hovers = sd(total_hovers) )
+Avg_visits_spc
+class(Avg_visits_spc)
+
+#seems like lophos may go the the platforms more on average. At a glance: 
+t.test(LocVSound_AJ_L$total_visits[LocVSound_AJ_L$Species =="AJ"], LocVSound_AJ_L$total_visits[LocVSound_AJ_L$Species =="L"])
+
+# At least not obviously there isn't a difference in visits
 
 ```
 
 
-
-
 ##STATS
 
-
+## assessing normality
 ```{r}
 ## basically assessing normality
 hist(LocVSound_AJ_L$pct_visits_sound[LocVSound_AJ_L$Species=="L"], breaks=6)
@@ -87,10 +144,10 @@ Do Lophostoma go to any platforms more than one another?
 Which? 
 Is there a difference between AJs and lophostoma? (anova? )
 
-Reshape data for plotting and manipulation
+#### Reshape data for plotting and manipulation with percents
 ```{r}
 # pull out just the relevent columns: 
-LocVSound_AJ_L_pcts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither", "pct_visits_nearest")]
+LocVSound_AJ_L_pcts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "pct_visits_sound", "pct_visits_sound", "pct_visits_neither", "pct_visits_nearest")]
 head(LocVSound_AJ_L_pcts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
 colnames(LocVSound_AJ_L_pcts)
@@ -99,74 +156,239 @@ mLocVSound <- melt(LocVSound_AJ_L_pcts, id=c("Bat.ID","Species"))
 head(mLocVSound)
 #rm(mLocVSound )
 ```
+#### Reshape data for plotting and manipulation with COUNTS
+```{r}
+# pull out just the relevent columns: 
+LocVSound_AJ_L_cnts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "visits_sound", "visits_sound", "visits_neither", "visits_nearest")]
+head(LocVSound_AJ_L_cnts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
+colnames(LocVSound_AJ_L_cnts)
+
+mLocVSound_cnts <- melt(LocVSound_AJ_L_cnts, id=c("Bat.ID","Species"))
+head(mLocVSound_cnts)
 
 
-## Kruskal-wallace: 
+## convenient also to just add this count value to mLocvSound
+visits_counts<-mLocVSound_cnts$value
+mLocVSound <-cbind(mLocVSound, visits_counts)
+
+
+```
+
+
+
 " Did the bats fly to the three platforms the same amount?"
 AJS
+####  Kruskal-wallace: AJ
 ```{r}
-SoundVSmell_AJ_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="AJ", ] )
+LvS_AJ_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="AJ", ] )
 
-SoundVSmell_AJ_k.test
+LvS_AJ_k.test
 ```
 Significant difference, so post-hocs
 
-Lophos
+####  Kruskal-wallace: Lophos
 ```{r}
-SoundVSmell_L_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="L", ] )
+LvS_L_k.test<- kruskal.test(value ~ variable, data =mLocVSound[mLocVSound$Species =="L", ] )
 
-SoundVSmell_L_k.test
+LvS_L_k.test
 ```
 Significant difference, so post-hocs
 
-##Man- Whitney / Wilcox
+
 "Which platforms did the bats fly to more, which were different?"
 
-AJs
+####  Man- Whitney / Wilcox: AJs
 ```{r}
 
-SoundVSmell_AJ_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, p.adjust.method=p.adjust.methods)
-SoundVSmell_AJ_wilhox
+LvS_AJ_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, p.adjust.method=p.adjust.methods)
+LvS_AJ_wilhox
 ```
 
-Lophos
+####  Man- Whitney / Wilcox: Lophos
 ```{r}
 
-SoundVSmell_L_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, p.adjust.method=p.adjust.methods)
-SoundVSmell_L_wilhox
-```
-
-##Dunn test post hoc
-
-AJ
-```{r}
-
-SoundVSmell_AJ_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, method="holm", kw=TRUE)
-SoundVSmell_AJ_dunn
-
-```
-
-Lopho
-```{r}
-
-SoundVSmell_L_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, method="holm", kw=TRUE)
-SoundVSmell_L_dunn
-
+LvS_L_wilhox = pairwise.wilcox.test(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, p.adjust.method=p.adjust.methods)
+LvS_L_wilhox
 ```
 
 
-Nemenyi or Zar or Mann-Whitney tests for post hoc analyses?
+
+##Dunn test post hoc: AJ
+```{r}
+
+LvS_AJ_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="AJ", ]$value,  mLocVSound[mLocVSound$Species =="AJ", ]$variable, method="holm", kw=TRUE)
+LvS_AJ_dunn
+
+```
+
+##Dunn test post hoc: Lopho
+```{r}
+
+LvS_L_dunn<-dunnTest(mLocVSound[mLocVSound$Species =="L", ]$value,  mLocVSound[mLocVSound$Species =="L", ]$variable, method="holm", kw=TRUE)
+LvS_L_dunn
+
+```
+
+
+#### Nemenyi or Zar or Mann-Whitney tests for post hoc analyses?
 ```{r}
 
 ```
 
-Plotting
+
+#### Do the different species go to the platforms equally?
+
+## Investigating assumptions for ANOVA Trying out transformations
+```{r}
+
+#proportion data
+boxplot(value ~  variable* Species, data = mLocVSound) #box width of largest looks more than 2x larger than that of smaller
+bartlett.test( value ~  interaction(variable, Species), data = mLocVSound) #Bartlett test shows variances arn't so different
+# proportions don't have normal variance
+
+# Count data also does not have homogenaity of variances
+ boxplot(value ~  variable* Species, data = mLocVSound_cnts)
+bartlett.test( value ~  interaction(variable, Species), data = mLocVSound_cnts)
+# does not have homogenaity of variance
+
+
+mLocVSound$value_sqrt<- (sqrt(mLocVSound$value)) #sqrt transformation
+mLocVSound_cnts$value_sqrt<- (sqrt(mLocVSound_cnts$value)) #sqrt transformation
+mLocVSound_cnts$value_cub = sign(mLocVSound_cnts$value) * abs(mLocVSound_cnts$value)^(1/3)  #cubed transformation
+mLocVSound_cnts$value_log<- (log(mLocVSound_cnts$value))#log transformation- too strong
+
+boxplot(value ~  variable* Species, data = mLocVSound) #original
+boxplot(value_sqrt ~  variable* Species, data = mLocVSound) #sqrt
+boxplot(value_cub ~  variable* Species, data = mLocVSound_cnts) #cub, pretty good
+boxplot(value_log ~  variable* Species, data = mLocVSound_cnts) # too strong
+
+
+bartlett.test( value_log ~  interaction(variable, Species), data = mLocVSound_cnts)
+## This actually seems to have fixed the homogenaity of variances problem
+
+#normality? Less important, ANOVAs are robust against this violation
+#proportions: 
+hist(mLocVSound$value[mLocVSound$Species=="L"], breaks=6)
+hist(mLocVSound$value_sqrt[mLocVSound$Species=="L"], breaks=6)
+#hist(mLocVSound$value_cub[mLocVSound$Species=="L"], breaks=6)
+
+
+#counts:
+hist(mLocVSound_cnts$value[mLocVSound_cnts$Species=="L"], breaks=6)
+hist(mLocVSound_cnts$value_sqrt[mLocVSound_cnts$Species=="L"], breaks=6)
+hist(mLocVSound_cnts$value_cub[mLocVSound_cnts$Species=="L"], breaks=6)
+
+hist(mLocVSound_cnts$value_log[mLocVSound_cnts$Species=="L"], breaks=8)
+str(mLocVSound_cnts)
+table(mLocVSound_cnts$value)
+sum(mLocVSound_cnts$value == 0)
+
+##View(mLocVSound_cnts)
+
+```
+
+##  Anova with transformed count data, type 1,2,3
+```{r}
+library(car)
+anova_LvS <- aov(value_cub ~ Species*variable, data=mLocVSound_cnts)
+anova_LvS
+Anova(anova_LvS, type = 2)
+Anova(anova_LvS, type = 3)
+
+```
+
+## confidence intervals and bootstrapping
+```{r}
+## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean 
+############CODE FROM BASTI#################################################
+
+#X will be the vector of proportions or rates or counts for one treatment in a species. It will calculate 5000 means based on re-sampling your data and then calculate the confidence intervals from that mean-distribution. 
+
+#The function spits out a vector of three values, the lower CI, mean, and upper CI.
+
+#This is the function used for it:
+#https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot.ci
+###########################################################################
+
+#mean function
+mean.w <- function(x,w) sum(x*w) # calculates a mean
+
+#bootstrapped confidence intervals function
+boot_ci <- function(x){
+    mean <- mean(x)
+    low <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,4]
+    high <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,5]
+    c(low,mean,high)} # bootstraps the confidence intervals
+
+
+
+## get rid of NAs in data using complete.cases
+mLocVSound_na<-mLocVSound[complete.cases(mLocVSound[ ,4:6]), ] #removes NA rows in value columns 4:6, this might now make sense if I change the number of columns
+
+#New database without NAs in the selected columns
+LocVSound_AJ_L_na <- LocVSound_AJ_L[complete.cases(LocVSound_AJ_L[ ,c("visits_sound", "visits_sound",  "visits_neither", "pct_visits_sound", "pct_visits_sound", "pct_visits_neither")]), ]
+
+#The CI's for sound v Sound, percentages
+set.seed(1)
+LvS_pct_CI <- do.call(data.frame,aggregate(value ~ Species + variable , boot_ci, data = mLocVSound_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
+colnames(LvS_pct_CI) <- c("Species", "variable", "low", "mean", "high")
+
+# The CIs for sound V Sound, counts
+LvS_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci, data = mLocVSound_na))
+LvS_count_CI
+
+colnames(LvS_count_CI) <- c("Species", "variable", "low", "mean", "high")
+
+
+```
 
 
 
 
-Plotting % of visits to the different platforms
+## Plotting
 
+## plotting confidence intervals for pct and % visits to platforms 
+```{r}
+#LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
+LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
+LvS_pct_CI_p                    
+
+
+#count plot
+LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
+LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_count_CI_p <- LvS_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
+LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p 
+
+```
+
+#### Plotting % of visits to the different platforms
 ```{r}
 LocVSound_bar <- ggplot(data =mLocVSound, aes(x = variable, y = value))
 LocVSound_bar <- LocVSound_bar + geom_boxplot(aes(fill=Species))
@@ -175,35 +397,52 @@ LocVSound_bar <- LocVSound_bar + theme(panel.grid.major = element_blank(), panel
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 LocVSound_bar <- LocVSound_bar + xlab("Cues")
 LocVSound_bar <- LocVSound_bar + ylab("Proportion of total visits")
-LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
                               "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
 LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSound_bar
 
 ggsave("LocVSound.png")
 ```
+
+#### Plotting absolute number of visits to the different platforms
+```{r}
+LocVSound_bar_cnts <- ggplot(data =mLocVSound_cnts, aes(x = variable, y = value))
+LocVSound_bar_cnts <- LocVSound_bar_cnts + geom_boxplot(aes(fill=Species))
+LocVSound_bar_cnts <- LocVSound_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSound_bar_cnts <- LocVSound_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSound_bar_cnts <- LocVSound_bar_cnts + xlab("Cues")
+LocVSound_bar_cnts <- LocVSound_bar_cnts + ylab("Number of visits")
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Location", "visits_sound" = "Sound",
+                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar_cnts
+
+ggsave("LocVSound_cnts.png")
+```
 #rm(LocVSound_bar)
 
 
 ##First choices/ visits by species
 
-clean data
+## clean data for first choices
 ```{r}
-## Think about figuring out how to incorperate 'nearest'
+## Think about figuring out how to incorporate 'nearest'
 ## Take out rows with weird values for first visit
 LocVSound_fc= subset(LocVSound, LocVSound$first_visit != "" & LocVSound$first_visit != "neither, nearest")
 LocVSound_fc$first_visit<- factor(LocVSound_fc$first_visit)
-View(LocVSound_fc)
+#View(LocVSound_fc)
 levels(LocVSound_fc$first_visit)
 ```
 
-Make new data frame with summary data
+## Make new data frame with summary data for first visits
 ```{r}
 # This does the same thing, but makes a new dataframe to do it
 #summarize occurances
 first_visits <- as.data.frame(table(LocVSound_fc$first_visit, LocVSound_fc$Species)) #summarized by species into table
 
-# first_visits <- dcast(first_visits, Var1~Var2 ) #reshapes into the appropriate format
+
 
 names(first_visits)<- c("Cue", "Species", "Visits")
 ## For plotting purposes, need to replace 0's with a small number, not meaningful
@@ -212,19 +451,93 @@ names(first_visits)<- c("Cue", "Species", "Visits")
  
  #reorder factor
  first_visits_fp$Cue<- factor(first_visits_fp$Cue, levels = c("location", "sound", "neither"))
-View(first_visits_fp)
+#View(first_visits_fp)
+
+first_visits_long <- dcast(first_visits, Cue~Species ) #reshapes into long format
+first_visits_long
+```
+## Make new data frame with summary data for first visits
+```{r}
+head(first_choices)
+fc_LocVSound<- first_choices[first_choices$Test=="LocVSound",]
+head(fc_LocVSound)
+
+unique(fc_LocVSound$first_visit)
+
 
 ```
 
 
-Plot first visits
 ```{r}
-First_visits_p <- ggplot(data =first_visits_fp, aes(x = Cue, y = Visits, fill = Species ))
+# This does the same thing, but makes a new dataframe to do it
+#summarize occurances
+first_visits_LvS <- as.data.frame(table(fc_LocVSound$first_visit, fc_LocVSound$Species)) #summarized by species into table
+
+
+
+names(first_visits_LvS)<- c("Cue", "Species", "Visits")
+## For plotting purposes, need to replace 0's with a small number, not meaningful
+ first_visits_LvS_fp <- first_visits_LvS #first visits for plot
+ first_visits_LvS_fp[first_visits_LvS_fp == 0] <- 0.03 
+ 
+ #reorder factor
+# first_visits_LvS_fp$Cue<- factor(first_visits_LvS_fp$Cue, levels = c("sound", "smell", "neither", "nearest"))
+#View(first_visits_LvS_fp)
+
+first_visits_long <- dcast(first_visits_LvS, Cue~Species ) #reshapes into wide format
+head(first_visits_long)
+```
+
+
+## STATS first visit
+Did the bats visit the platforms first equally?
+Did the species visit differently?
+# first visits, exact multinomial test: AJs
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the AJs  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# AJs are in column #2:
+observed_LvS_AJ <- c(first_visits_long[first_visits_long=="Sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="sound", 2])
+observed_LvS_AJ    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ #mult_test_LvS_AJ <- multinomial.test(observed_LvS_AJ, prob) #exact multinomial test
+ #mult_test_LvS_AJ
+
+ 
+```
+So AJs went to Sound more than the other places
+
+# first visits, exact multinomial test: Lophos
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the Lophos  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# Ls are in column #2:
+observed_LvS_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="sound", 3])
+observed_LvS_L    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ #mult_test_LvS_L <- multinomial.test(observed_LvS_L, prob) #exact multinomial test
+ #mult_test_LvS_L
+
+```
+Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
+
+
+#### Plot first visits
+```{r}
+First_visits_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
 First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
 
 First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("location" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("Sound" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
 First_visits_p  <- First_visits_p  + xlab("Cues")
 First_visits_p  <- First_visits_p  + ylab("Total visits")
 First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
@@ -234,6 +547,969 @@ First_visits_p
   ggsave("Loc_v_sound_first_visit.png")
  # rm(First_visits_p)
 ```
+
+
+
+##################################################################################
+
+# LOC V SMELL
+
+## Import data 
+```{r}
+
+head(LocVSmell)
+
+## make a subset with only lophos and AJs, remove Trachops as factor level
+
+LocVSmell_AJ_L= subset(LocVSmell, LocVSmell$Species != "T")
+##View(LocVSmell_AJ_L)
+LocVSmell_AJ_L$Species<- factor(LocVSmell_AJ_L$Species)
+head(LocVSmell_AJ_L)
+#levels(LocVSmell_AJ_L$Species)
+```
+
+SUMMARIZING AVERAGE proportion of visits to each cue
+```{r}
+#  summarize average visits per species using dplyr
+#  summarize number
+#  seperate out the species
+#look at histograms of responses
+#  run kruskal wallace? Anova with percents? 
+#  Make graphs: percentage choices for each species
+# 
+
+Avg_pct_visits<-LocVSmell_AJ_L %>% group_by(Species) %>%
+      summarise(avg_sound = mean(pct_visits_loc, na.rm=TRUE), avg_smell = mean(pct_visits_smell, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE) )
+Avg_pct_visits
+
+
+
+ 
+
+```
+
+SUMMARIZING AVERAGE number of of visits overall, per species
+```{r}
+### Can also look at the absolute number of times that a given species visits or lands on a platform (total visits)
+## summary of the mean of the total visits / species mean of the total lands / species, mean of the total hovers/ species
+
+
+Avg_visits_spc<-LocVSmell_AJ_L %>% group_by(Species) %>%
+      summarise(avg_vis = mean(total_visits, na.rm=TRUE), sd_vis = sd(total_visits), avg_lands = mean(total_lands, na.rm=TRUE), sd_lands = sd(total_lands), avg_hovers = mean(total_hovers, na.rm=TRUE), sd_hovers = sd(total_hovers) )
+Avg_visits_spc
+class(Avg_visits_spc)
+
+#seems like lophos may go the the platforms more on average. At a glance: 
+t.test(LocVSmell_AJ_L$total_visits[LocVSmell_AJ_L$Species =="AJ"], LocVSmell_AJ_L$total_visits[LocVSmell_AJ_L$Species =="L"])
+
+# At least here, seems that lohpo visit and land more often
+```
+
+
+##STATS
+
+## assessing normality
+```{r}
+## basically assessing normality
+hist(LocVSmell_AJ_L$pct_visits_smell[LocVSmell_AJ_L$Species=="L"], breaks=6)
+
+#not particularly normal
+head(LocVSmell_AJ_L)
+```
+
+
+
+Do AJs go to one platform more than another? 
+Do Lophostoma go to any platforms more than one another? 
+Which? 
+Is there a difference between AJs and lophostoma? (anova? )
+
+#### Reshape data for plotting and manipulation with percents
+```{r}
+# pull out just the relevent columns: 
+LocVSmell_AJ_L_pcts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_smell", "pct_visits_neither", "pct_visits_nearest")]
+head(LocVSmell_AJ_L_pcts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
+colnames(LocVSmell_AJ_L_pcts)
+
+mLocVSmell <- melt(LocVSmell_AJ_L_pcts, id=c("Bat.ID","Species"))
+head(mLocVSmell)
+#rm(mLocVSmell )
+```
+#### Reshape data for plotting and manipulation with COUNTS
+```{r}
+# pull out just the relevent columns: 
+LocVSmell_AJ_L_cnts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_loc", "visits_smell", "visits_neither", "visits_nearest")]
+head(LocVSmell_AJ_L_cnts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
+colnames(LocVSmell_AJ_L_cnts)
+
+mLocVSmell_cnts <- melt(LocVSmell_AJ_L_cnts, id=c("Bat.ID","Species"))
+head(mLocVSmell_cnts)
+
+
+## convenient also to just add this count value to mLocVSmell
+visits_counts<-mLocVSmell_cnts$value
+mLocVSmell <-cbind(mLocVSmell, visits_counts)
+
+
+```
+
+
+
+" Did the bats fly to the three platforms the same amount?"
+AJS
+####  Kruskal-wallace: AJ
+```{r}
+LvSm_AJ_k.test<- kruskal.test(value ~ variable, data =mLocVSmell[mLocVSmell$Species =="AJ", ] )
+LvSm_AJ_k.test
+
+LvSm_AJ_count_k.test<- kruskal.test(value ~ variable, data =mLocVSmell_cnts[mLocVSmell_cnts$Species =="AJ", ] )
+LvSm_AJ_count_k.test
+```
+Significant difference, so post-hocs
+
+####  Kruskal-wallace: Lophos
+```{r}
+LvSm_L_k.test<- kruskal.test(value ~ variable, data =mLocVSmell[mLocVSmell$Species =="L", ] )
+
+LvSm_L_k.test
+
+LvSm_L_cnts_k.test<- kruskal.test(value ~ variable, data =mLocVSmell_cnts[mLocVSmell_cnts$Species =="L", ] )
+
+LvSm_L_cnts_k.test
+
+```
+Significant difference, so post-hocs
+
+
+"Which platforms did the bats fly to more, which were different?"
+
+####  Man- Whitney / Wilcox: AJs
+```{r}
+
+LvSm_AJ_wilhox = pairwise.wilcox.test(mLocVSmell[mLocVSmell$Species =="AJ", ]$value,  mLocVSmell[mLocVSmell$Species =="AJ", ]$variable, p.adjust.method=p.adjust.methods)
+
+LvSm_AJ_wilhox
+```
+
+####  Man- Whitney / Wilcox: Lophos
+```{r}
+
+LvSm_L_wilhox = pairwise.wilcox.test(mLocVSmell[mLocVSmell$Species =="L", ]$value,  mLocVSmell[mLocVSmell$Species =="L", ]$variable, p.adjust.method=p.adjust.methods)
+LvSm_L_wilhox
+```
+
+
+
+##Dunn test post hoc: AJ
+```{r}
+
+LvSm_AJ_dunn<-dunnTest(mLocVSmell[mLocVSmell$Species =="AJ", ]$value,  mLocVSmell[mLocVSmell$Species =="AJ", ]$variable, method="holm", kw=TRUE)
+LvSm_AJ_dunn
+
+```
+
+,./##Dunn test post hoc: Lopho
+```{r}
+
+LvSm_L_dunn<-dunnTest(mLocVSmell[mLocVSmell$Species =="L", ]$value,  mLocVSmell[mLocVSmell$Species =="L", ]$variable, method="holm", kw=TRUE)
+LvSm_L_dunn
+
+```
+
+
+#### Nemenyi or Zar or Mann-Whitney tests for post hoc analyses?
+```{r}
+
+```
+
+
+#### Do the different species go to the platforms equally?
+
+## Investigating assumptions for ANOVA Trying out transformations
+```{r}
+
+#proportion data
+boxplot(value ~  variable* Species, data = mLocVSmell) #box width of largest looks more than 2x larger than that of smaller
+bartlett.test( value ~  interaction(variable, Species), data = mLocVSmell) #Bartlett test shows variances are different
+# proportions don't have normal variance
+
+# Count data also does not have homogenaity of variances
+ boxplot(value ~  variable* Species, data = mLocVSmell_cnts)
+bartlett.test( value ~  interaction(variable, Species), data = mLocVSmell_cnts)
+# does not have homogenaity of variance
+
+summary(xx)
+mLocVSmell_cnts$value_sqrt<- (sqrt(mLocVSmell_cnts$value)) #sqrt transformation
+mLocVSmell_cnts$value_cub = sign(mLocVSmell_cnts$value) * abs(mLocVSmell_cnts$value)^(1/3)  #cubed transformation
+mLocVSmell$value_log<- (log(mLocVSmell$value))#log transformation- too strong
+mLocVSmell$value_sqrt<- (sqrt(mLocVSmell$value)) #sqrt transformation
+mLocVSmell$value_cub = sign(mLocVSmell$value) * abs(mLocVSmell_cnts$value)^(1/3)  #cubed transformation
+mLocVSmell$value_log<- (log(mLocVSmell$value))#log transformation- too strong
+
+boxplot(value ~  variable* Species, data = mLocVSmell) #original
+boxplot(value_sqrt ~  variable* Species, data = mLocVSmell) #sqrt
+boxplot(value_cub ~  variable* Species, data = mLocVSmell) #cub, pretty good
+boxplot(value_log ~  variable* Species, data = mLocVSmell) # too strong
+
+counts
+boxplot(value ~  variable* Species, data = mLocVSmell_cnts) #original
+boxplot(value_sqrt ~  variable* Species, data = mLocVSmell_cnts) #sqrt, prob best
+boxplot(value_cub ~  variable* Species, data = mLocVSmell_cnts) #cub, 
+boxplot(value_log ~  variable* Species, data = mLocVSmell_cnts) # too strong
+
+bartlett.test( value_sqrt ~  interaction(variable, Species), data = mLocVSmell)
+bartlett.test( value_sqrt ~  interaction(variable, Species), data = mLocVSmell_cnts)
+## This actually seems to have fixed the homogenaity of variances problem
+
+#normality? Less important, ANOVAs are robust against this violation
+#proportions: 
+hist(mLocVSmell$value[mLocVSmell$Species=="L"], breaks=6)
+hist(mLocVSmell$value_sqrt[mLocVSmell$Species=="L"], breaks=6)
+#hist(mLocVSmell$value_cub[mLocVSmell$Species=="L"], breaks=6)
+
+
+#counts:
+hist(mLocVSmell_cnts$value[mLocVSmell_cnts$Species=="L"], breaks=6)
+hist(mLocVSmell_cnts$value_sqrt[mLocVSmell_cnts$Species=="L"], breaks=6)
+hist(mLocVSmell_cnts$value_cub[mLocVSmell_cnts$Species=="L"], breaks=6)
+
+hist(mLocVSmell_cnts$value_log[mLocVSmell_cnts$Species=="L"], breaks=8)
+str(mLocVSmell_cnts)
+table(mLocVSmell_cnts$value)
+sum(mLocVSmell_cnts$value == 0)
+## the logged values look good but ruin the homogency of variance
+## 
+##View(mLocVSmell_cnts)
+
+```
+
+##  Anova with transformed count data, type 1,2,3
+```{r}
+library(car)
+anova_LvSm <- aov(value_sqrt ~ Species*variable, data=mLocVSmell_cnts)
+anova_LvSm
+Anova(anova_LvSm, type = 2)
+Anova(anova_LvSm, type = 3)
+
+```
+
+## confidence intervals and bootstrapping
+```{r}
+## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean 
+############CODE FROM BASTI#################################################
+
+#X will be the vector of proportions or rates or counts for one treatment in a species. It will calculate 5000 means based on re-sampling your data and then calculate the confidence intervals from that mean-distribution. 
+
+#The function spits out a vector of three values, the lower CI, mean, and upper CI.
+
+#This is the function used for it:
+#https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot.ci
+###########################################################################
+
+#mean function
+mean.w <- function(x,w) sum(x*w) # calculates a mean
+
+#bootstrapped confidence intervals function
+boot_ci <- function(x){
+    mean <- mean(x)
+    low <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,4]
+    high <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,5]
+    c(low,mean,high)} # bootstraps the confidence intervals
+
+
+
+## get rid of NAs in data using complete.cases
+mLocVSmell_na<-mLocVSmell[complete.cases(mLocVSmell[ ,4:8]), ] #removes NA rows in value columns 4:6, this might not make sense if I change the number of columns
+head(mLocVSmell)
+#New database without NAs in the selected columns
+LocVSmell_AJ_L_na <- LocVSmell_AJ_L[complete.cases(LocVSmell_AJ_L[ ,c("visits_sound", "visits_smell",  "visits_neither", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither")]), ]
+
+#The CI's for sound v Smell, percentages
+set.seed(1)
+LvSm_pct_CI <- do.call(data.frame,aggregate(value ~ Species + variable , boot_ci, data = mLocVSmell_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
+colnames(LvSm_pct_CI) <- c("Species", "variable", "low", "mean", "high")
+
+# The CIs for sound V Smell, counts
+LvSm_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci, data = mLocVSmell_na))
+LvSm_count_CI
+
+colnames(LvSm_count_CI) <- c("Species", "variable", "low", "mean", "high")
+
+
+```
+
+
+
+
+## Plotting
+
+## plotting confidence intervals for pct and % visits to platforms 
+```{r}
+#LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_pct_CI_p <- LvSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
+LvSm_pct_CI_p                    
+
+
+#count plot
+LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_count_CI_p <- LvSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
+LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
+LvSm_count_CI_p 
+
+```
+#check out nearest. Is there a weird value?
+
+#### Plotting % of visits to the different platforms
+```{r}
+LocVSmell_bar <- ggplot(data =mLocVSmell, aes(x = variable, y = value))
+LocVSmell_bar <- LocVSmell_bar + geom_boxplot(aes(fill=Species))
+LocVSmell_bar <- LocVSmell_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSmell_bar <- LocVSmell_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSmell_bar <- LocVSmell_bar + xlab("Cues")
+LocVSmell_bar <- LocVSmell_bar + ylab("Proportion of total visits")
+LocVSmell_bar <- LocVSmell_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LocVSmell_bar <- LocVSmell_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSmell_bar
+
+#ggsave("LocVSmell.png")
+```
+
+#### Plotting absolute number of visits to the different platforms
+```{r}
+LocVSmell_bar_cnts <- ggplot(data =mLocVSmell_cnts, aes(x = variable, y = value))
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + geom_boxplot(aes(fill=Species))
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + xlab("Cues")
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + ylab("Number of visits")
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Location", "visits_smell" = "Smell",
+                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSmell_bar_cnts
+
+ggsave("LocVSmell_cnts.png")
+```
+#rm(LocVSmell_bar)
+
+
+##First choices/ visits by species
+
+
+
+## clean data for first choices
+```{r}
+## Think about figuring out how to incorporate 'nearest'
+## Take out rows with weird values for first visit
+LocVSmell_fc= subset(LocVSmell, LocVSmell$first_visit != "" & LocVSmell$first_visit != "neither, nearest")
+LocVSmell_fc$first_visit<- factor(LocVSmell_fc$first_visit)
+#View(LocVSmell_fc)
+levels(LocVSmell_fc$first_visit)
+```
+
+## Make new data frame with summary data for first visits
+```{r}
+head(first_choices)
+fc_LocVSound<- first_choices[first_choices$Test=="LocVSound",]
+head(fc_LocVSound)
+
+unique(fc_LocVSound$first_visit)
+
+
+```
+
+
+
+```{r}
+# This does the same thing, but makes a new dataframe to do it
+#summarize occurances
+first_visits_LvS <- as.data.frame(table(fc_LocVSound$first_visit, fc_LocVSound$Species)) #summarized by species into table
+
+
+
+names(first_visits_LvS)<- c("Cue", "Species", "Visits")
+## For plotting purposes, need to replace 0's with a small number, not meaningful
+ first_visits_LvS_fp <- first_visits_LvS #first visits for plot
+ first_visits_LvS_fp[first_visits_LvS_fp == 0] <- 0.03 
+ 
+ #reorder factor
+ first_visits_LvS_fp$Cue<- factor(first_visits_LvS_fp$Cue, levels = c("sound", "smell", "neither", "nearest"))
+#View(first_visits_LvS_fp)
+
+first_visits_long <- dcast(first_visits_LvS, Cue~Species ) #reshapes into wide format
+head(first_visits_long)
+```
+## STATS first visit
+Did the bats visit the platforms first equally?
+Did the species visit differently?
+# first visits, exact multinomial test: AJs
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the AJs  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# AJs are in column #2:
+observed_LvSm_AJ <- c(first_visits_long[first_visits_long=="Sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="smell", 2])
+observed_LvSm_AJ    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ #mult_test_LvSm_AJ <- multinomial.test(observed_LvSm_AJ, prob) #exact multinomial test
+ #mult_test_LvSm_AJ
+
+ 
+```
+So AJs went to Sound more than the other places
+
+# first visits, exact multinomial test: Lophos
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the Lophos  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# Ls are in column #2:
+observed_LvSm_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="smell", 3])
+observed_LvSm_L    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ #mult_test_LvSm_L <- multinomial.test(observed_LvSm_L, prob) #exact multinomial test
+ #mult_test_LvSm_L
+
+```
+Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
+
+
+#### Plot first visits
+```{r}
+First_visits_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("location" = "Location", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_p  <- First_visits_p  + xlab("Cues")
+First_visits_p  <- First_visits_p  + ylab("Total visits")
+First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+
+First_visits_p
+
+  ggsave("Loc_v_smell_first_visit.png")
+ # rm(First_visits_p)
+```
+
+
+
+
+
+
+
+
+
+######SOUND V SMELL#######################
+
+
+
+
+# SOUND V SMELL
+
+## Import data 
+```{r}
+
+head(SoundVSmell)
+
+## make a subset with only lophos and AJs, remove Trachops as factor level
+
+SoundVSmell_AJ_L= subset(SoundVSmell, SoundVSmell$Species != "T")
+##View(SoundVSmell_AJ_L)
+SoundVSmell_AJ_L$Species<- factor(SoundVSmell_AJ_L$Species)
+head(SoundVSmell_AJ_L)
+#levels(SoundVSmell_AJ_L$Species)
+```
+
+SUMMARIZING AVERAGE proportion of visits to each cue
+```{r}
+#  summarize average visits per species using dplyr
+#  summarize number
+#  seperate out the species
+#look at histograms of responses
+#  run kruskal wallace? Anova with percents? 
+#  Make graphs: percentage choices for each species
+# 
+
+Avg_pct_visits<-SoundVSmell_AJ_L %>% group_by(Species) %>%
+      summarise(avg_sound = mean(pct_visits_sound, na.rm=TRUE), avg_smell = mean(pct_visits_smell, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE), avg_nearest = mean(pct_visits_nearest, na.rm=TRUE) )
+Avg_pct_visits
+
+
+
+ 
+
+```
+
+SUMMARIZING AVERAGE number of of visits overall, per species
+```{r}
+### Can also look at the absolute number of times that a given species visits or lands on a platform (total visits)
+## summary of the mean of the total visits / species mean of the total lands / species, mean of the total hovers/ species
+
+
+Avg_visits_spc<-SoundVSmell_AJ_L %>% group_by(Species) %>%
+      summarise(avg_vis = mean(total_visits, na.rm=TRUE), sd_vis = sd(total_visits), avg_lands = mean(total_lands, na.rm=TRUE), sd_lands = sd(total_lands), avg_hovers = mean(total_hovers, na.rm=TRUE), sd_hovers = sd(total_hovers) )
+Avg_visits_spc
+class(Avg_visits)
+
+#Both visit the same, but lophos probably land more: 
+t.test(SoundVSmell_AJ_L$total_visits[SoundVSmell_AJ_L$Species =="AJ"], SoundVSmell_AJ_L$total_visits[SoundVSmell_AJ_L$Species =="L"])
+
+t.test(SoundVSmell_AJ_L$total_hovers[SoundVSmell_AJ_L$Species =="AJ"], SoundVSmell_AJ_L$total_visits[SoundVSmell_AJ_L$Species =="L"])
+
+t.test(SoundVSmell_AJ_L$total_lands[SoundVSmell_AJ_L$Species =="AJ"], SoundVSmell_AJ_L$total_visits[SoundVSmell_AJ_L$Species =="L"])
+
+# At least here, seems that lophos land more, both visit the same amount
+```
+
+
+##STATS
+
+## assessing normality
+```{r}
+## basically assessing normality
+hist(SoundVSmell_AJ_L$pct_visits_smell[SoundVSmell_AJ_L$Species=="L"], breaks=6)
+
+#not particularly normal
+head(SoundVSmell_AJ_L)
+```
+
+
+
+Do AJs go to one platform more than another? 
+Do Lophostoma go to any platforms more than one another? 
+Which? 
+Is there a difference between AJs and lophostoma? (anova? )
+
+#### Reshape data for plotting and manipulation with percents
+```{r}
+# pull out just the relevent columns: 
+SoundVSmell_AJ_L_pcts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither", "pct_visits_nearest")]
+head(SoundVSmell_AJ_L_pcts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
+colnames(SoundVSmell_AJ_L_pcts)
+
+mSoundVSmell <- melt(SoundVSmell_AJ_L_pcts, id=c("Bat.ID","Species"))
+head(mSoundVSmell)
+#rm(mSoundVSmell )
+```
+#### Reshape data for plotting and manipulation with COUNTS
+```{r}
+# pull out just the relevent columns: 
+SoundVSmell_AJ_L_cnts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_sound", "visits_smell", "visits_neither", "visits_nearest")]
+head(SoundVSmell_AJ_L_cnts)
+## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
+colnames(SoundVSmell_AJ_L_cnts)
+
+mSoundVSmell_cnts <- melt(SoundVSmell_AJ_L_cnts, id=c("Bat.ID","Species"))
+head(mSoundVSmell_cnts)
+
+
+## convenient also to just add this count value to mSoundVSmell
+visits_counts<-mSoundVSmell_cnts$value
+mSoundVSmell <-cbind(mSoundVSmell, visits_counts)
+
+
+```
+
+
+
+" Did the bats fly to the three platforms the same amount?"
+AJS
+####  Kruskal-wallace: AJ
+```{r}
+SovSm_AJ_k.test<- kruskal.test(value ~ variable, data =mSoundVSmell[mSoundVSmell$Species =="AJ", ] )
+SovSm_AJ_k.test
+
+SovSm_AJ_count_k.test<- kruskal.test(value ~ variable, data =mSoundVSmell_cnts[mSoundVSmell_cnts$Species =="AJ", ] )
+SovSm_AJ_count_k.test
+
+# Yes, there's no difference in the amount that AJ's flew to the different platforms
+```
+Significant difference, so no post-hocs
+
+<!-- ####  Kruskal-wallace: Lophos -->
+<!-- ```{r} -->
+<!-- SovSm_L_k.test<- kruskal.test(value ~ variable, data =mSoundVSmell[mSoundVSmell$Species =="L", ] ) -->
+
+<!-- SovSm_L_k.test -->
+
+<!-- SovSm_L_cnts_k.test<- kruskal.test(value ~ variable, data =mSoundVSmell_cnts[mSoundVSmell_cnts$Species =="L", ] ) -->
+
+<!-- SovSm_L_cnts_k.test -->
+
+<!-- ``` -->
+<!-- Significant difference, so post-hocs -->
+
+
+<!-- "Which platforms did the bats fly to more, which were different?" -->
+
+<!-- ####  Man- Whitney / Wilcox: AJs -->
+<!-- ```{r} -->
+
+<!-- SovSm_AJ_wilhox = pairwise.wilcox.test(mSoundVSmell[mSoundVSmell$Species =="AJ", ]$value,  mSoundVSmell[mSoundVSmell$Species =="AJ", ]$variable, p.adjust.method=p.adjust.methods) -->
+<!-- SovSm_AJ_wilhox -->
+<!-- ``` -->
+
+<!-- ####  Man- Whitney / Wilcox: Lophos -->
+<!-- ```{r} -->
+
+<!-- SovSm_L_wilhox = pairwise.wilcox.test(mSoundVSmell[mSoundVSmell$Species =="L", ]$value,  mSoundVSmell[mSoundVSmell$Species =="L", ]$variable, p.adjust.method=p.adjust.methods) -->
+<!-- SovSm_L_wilhox -->
+<!-- ``` -->
+
+
+
+<!-- ##Dunn test post hoc: AJ -->
+<!-- ```{r} -->
+
+<!-- SovSm_AJ_dunn<-dunnTest(mSoundVSmell[mSoundVSmell$Species =="AJ", ]$value,  mSoundVSmell[mSoundVSmell$Species =="AJ", ]$variable, method="holm", kw=TRUE) -->
+<!-- SovSm_AJ_dunn -->
+
+<!-- ``` -->
+
+<!-- ##Dunn test post hoc: Lopho -->
+<!-- ```{r} -->
+
+<!-- SovSm_L_dunn<-dunnTest(mSoundVSmell[mSoundVSmell$Species =="L", ]$value,  mSoundVSmell[mSoundVSmell$Species =="L", ]$variable, method="holm", kw=TRUE) -->
+<!-- SovSm_L_dunn -->
+
+<!-- ``` -->
+
+
+<!-- #### Nemenyi or Zar or Mann-Whitney tests for post hoc analyses? -->
+<!-- ```{r} -->
+
+<!-- ``` -->
+
+
+<!-- #### Do the different species go to the platforms equally? -->
+
+## Investigating assumptions for ANOVA Trying out transformations
+```{r}
+
+#proportion data
+boxplot(value ~  variable* Species, data = mSoundVSmell) #box width of largest looks more than 2x larger than that of smaller
+bartlett.test( value ~  interaction(variable, Species), data = mSoundVSmell) #Bartlett test shows variances are different
+# proportions don't have normal variance
+
+# Count data also does not have homogenaity of variances
+ boxplot(value ~  variable* Species, data = mSoundVSmell_cnts)
+bartlett.test( value ~  interaction(variable, Species), data = mSoundVSmell_cnts)
+# does not have homogenaity of variance
+
+summary(xx)
+mSoundVSmell_cnts$value_sqrt<- (sqrt(mSoundVSmell_cnts$value)) #sqrt transformation
+mSoundVSmell_cnts$value_cub = sign(mSoundVSmell_cnts$value) * abs(mSoundVSmell_cnts$value)^(1/3)  #cubed transformation
+mSoundVSmell$value_log<- (log(mSoundVSmell$value))#log transformation- too strong
+mSoundVSmell$value_sqrt<- (sqrt(mSoundVSmell$value)) #sqrt transformation
+mSoundVSmell$value_cub = sign(mSoundVSmell$value) * abs(mSoundVSmell_cnts$value)^(1/3)  #cubed transformation
+mSoundVSmell$value_log<- (log(mSoundVSmell$value))#log transformation- too strong
+
+boxplot(value ~  variable* Species, data = mSoundVSmell) #original
+boxplot(value_sqrt ~  variable* Species, data = mSoundVSmell) #sqrt
+boxplot(value_cub ~  variable* Species, data = mSoundVSmell) #cub, pretty good
+boxplot(value_log ~  variable* Species, data = mSoundVSmell) # too strong
+
+#counts
+boxplot(value ~  variable* Species, data = mSoundVSmell_cnts) #original
+boxplot(value_sqrt ~  variable* Species, data = mSoundVSmell_cnts) #sqrt, prob best
+boxplot(value_cub ~  variable* Species, data = mSoundVSmell_cnts) #cub, 
+boxplot(value_log ~  variable* Species, data = mSoundVSmell_cnts) # too strong
+
+bartlett.test( value_sqrt ~  interaction(variable, Species), data = mSoundVSmell)
+bartlett.test( value_sqrt ~  interaction(variable, Species), data = mSoundVSmell_cnts)
+## This actually seems to have fixed the homogenaity of variances problem
+
+#normality? Less important, ANOVAs are robust against this violation
+#proportions: 
+hist(mSoundVSmell$value[mSoundVSmell$Species=="L"], breaks=6)
+hist(mSoundVSmell$value_sqrt[mSoundVSmell$Species=="L"], breaks=6)
+#hist(mSoundVSmell$value_cub[mSoundVSmell$Species=="L"], breaks=6)
+
+
+#counts:
+hist(mSoundVSmell_cnts$value[mSoundVSmell_cnts$Species=="L"], breaks=6)
+hist(mSoundVSmell_cnts$value_sqrt[mSoundVSmell_cnts$Species=="L"], breaks=6)
+hist(mSoundVSmell_cnts$value_cub[mSoundVSmell_cnts$Species=="L"], breaks=6)
+
+#hist(mSoundVSmell_cnts$value_log[mSoundVSmell_cnts$Species=="L"], breaks=8)
+str(mSoundVSmell_cnts)
+table(mSoundVSmell_cnts$value)
+
+
+## the logged values look good but ruin the homogency of variance
+## THe square root transformation does well
+##View(mSoundVSmell_cnts)
+
+```
+
+##  Anova with transformed count data, type 1,2,3
+```{r}
+library(car)
+anova_SovSm <- aov(value_sqrt ~ Species*variable, data=mSoundVSmell_cnts)
+anova_SovSm
+Anova(anova_SovSm, type = 2)
+Anova(anova_SovSm, type = 3)
+
+```
+
+## confidence intervals and bootstrapping
+```{r}
+## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean 
+############CODE FROM BASTI#################################################
+
+#X will be the vector of proportions or rates or counts for one treatment in a species. It will calculate 5000 means based on re-sampling your data and then calculate the confidence intervals from that mean-distribution. 
+
+#The function spits out a vector of three values, the lower CI, mean, and upper CI.
+
+#This is the function used for it:
+#https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot.ci
+###########################################################################
+
+#mean function
+mean.w <- function(x,w) sum(x*w) # calculates a mean
+
+#bootstrapped confidence intervals function
+boot_ci <- function(x){
+    mean <- mean(x)
+    low <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,4]
+    high <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,5]
+    c(low,mean,high)} # bootstraps the confidence intervals
+
+
+
+## get rid of NAs in data using complete.cases
+mSoundVSmell_na<-mSoundVSmell[complete.cases(mSoundVSmell[ ,4:8]), ] #removes NA rows in value columns 4:6, this might not make sense if I change the number of columns
+head(mSoundVSmell)
+#New database without NAs in the selected columns
+SoundVSmell_AJ_L_na <- SoundVSmell_AJ_L[complete.cases(SoundVSmell_AJ_L[ ,c("visits_sound", "visits_smell",  "visits_neither", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither")]), ]
+
+#The CI's for sound v Smell, percentages
+set.seed(1)
+SovSm_pct_CI <- do.call(data.frame,aggregate(value ~ Species + variable , boot_ci, data = mSoundVSmell_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
+colnames(SovSm_pct_CI) <- c("Species", "variable", "low", "mean", "high")
+
+# The CIs for sound V Smell, counts
+SovSm_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci, data = mSoundVSmell_na))
+SovSm_count_CI
+
+colnames(SovSm_count_CI) <- c("Species", "variable", "low", "mean", "high")
+
+
+```
+
+
+
+
+## Plotting
+
+## plotting confidence intervals for pct and % visits to platforms 
+```{r}
+#SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
+SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p                    
+
+
+#count plot
+SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean number of visits")
+SovSm_count_CI_p 
+
+```
+#check out nearest. Is there a weird value?
+
+#### Plotting % of visits to the different platforms
+```{r}
+SoundVSmell_bar <- ggplot(data =mSoundVSmell, aes(x = variable, y = value))
+SoundVSmell_bar <- SoundVSmell_bar + geom_boxplot(aes(fill=Species))
+SoundVSmell_bar <- SoundVSmell_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+SoundVSmell_bar <- SoundVSmell_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+SoundVSmell_bar <- SoundVSmell_bar + xlab("Cues")
+SoundVSmell_bar <- SoundVSmell_bar + ylab("Proportion of total visits")
+SoundVSmell_bar <- SoundVSmell_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+SoundVSmell_bar <- SoundVSmell_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SoundVSmell_bar
+
+ggsave("SoundVSmell.png")
+```
+
+#### Plotting absolute number of visits to the different platforms
+```{r}
+SoundVSmell_bar_cnts <- ggplot(data =mSoundVSmell_cnts, aes(x = variable, y = value))
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + geom_boxplot(aes(fill=Species))
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + xlab("Cues")
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + ylab("Number of visits")
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Sound", "visits_smell" = "Smell",
+                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SoundVSmell_bar_cnts
+
+ggsave("SoundVSmell_cnts.png")
+```
+#rm(SoundVSmell_bar)
+
+
+##First choices/ visits by species
+
+## clean data for first choices
+```{r}
+## Think about figuring out how to incorporate 'nearest'
+## Take out rows with weird values for first visit
+SoundVSmell_fc= subset(SoundVSmell, SoundVSmell$first_visit != "" & SoundVSmell$first_visit != "neither, nearest")
+SoundVSmell_fc$first_visit<- factor(SoundVSmell_fc$first_visit)
+#View(SoundVSmell_fc)
+levels(SoundVSmell_fc$first_visit)
+```
+
+## Make new data frame with summary data for first visits
+```{r}
+# This does the same thing, but makes a new dataframe to do it
+#summarize occurances
+first_visits <- as.data.frame(table(SoundVSmell_fc$first_visit, SoundVSmell_fc$Species)) #summarized by species into table
+
+
+
+names(first_visits)<- c("Cue", "Species", "Visits")
+## For plotting purposes, need to replace 0's with a small number, not meaningful
+ first_visits_fp <- first_visits #first visits for plot
+ first_visits_fp[first_visits_fp == 0] <- 0.03 
+ 
+ #reorder factor
+ first_visits_fp$Cue<- factor(first_visits_fp$Cue, levels = c("sound", "smell", "neither"))
+#View(first_visits_fp)
+
+first_visits_long <- dcast(first_visits, Cue~Species ) #reshapes into long format
+first_visits_long
+```
+## STATS first visit
+Did the bats visit the platforms first equally?
+Did the species visit differently?
+# first visits, exact multinomial test: AJs
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the AJs  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# AJs are in column #2:
+observed_SovSm_AJ <- c(first_visits_long[first_visits_long=="sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="smell", 2])
+observed_SovSm_AJ    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ ##mult_test_SovSm_AJ <- multinomial.test(observed_SovSm_AJ, prob) #exact multinomial test
+ ##mult_test_SovSm_AJ
+
+ 
+```
+So AJs went to Sound more than the other places
+
+# first visits, exact multinomial test: Lophos
+```{r}
+## MUST CHANGE THESE NUMBERS MANUALLY ##
+# Did the Lophos  visit the three platforms equally?
+# Use exact multinomial test: categorical data, small sample sizes
+
+# Ls are in column #2:
+observed_SovSm_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="smell", 3])
+observed_SovSm_L    #observed number of visits to the three different platforms
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
+ #mult_test_SovSm_L <- multinomial.test(observed_SovSm_L, prob) #exact multinomial test
+ #mult_test_SovSm_L
+
+```
+Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
+
+
+#### Plot first visits
+```{r}
+First_visits_p <- ggplot(data =first_visits_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("Sound" = "Sound", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_p  <- First_visits_p  + xlab("Cues")
+First_visits_p  <- First_visits_p  + ylab("Total visits")
+First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+
+First_visits_p
+
+  ggsave("Sound_v_smell_first_visit.png")
+ # rm(First_visits_p)
+```
+
+
+
+
 
 
 
