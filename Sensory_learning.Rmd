@@ -25,6 +25,7 @@ library(readr)
 
 ```{r}
 ## TO DO: 
+# Remove nearest from all the plots
 
 ## Fill in first visits, make simply neither OR nearest, not both: make only sound v smell include nearest? Make data include that. 
 
@@ -62,10 +63,26 @@ LocVSound <- read.csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSound_08
 SoundVSmell <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/SoundVSmell_08.06.18.csv")
 
 LocVSmell <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/LocVSmell_08.06.18.csv")
+colnames(LocVSmell)
+#remove columns "visits_nearest" "pct_visits_nearest"
 
 first_choices <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/first_response_08.06.08.csv")
 first_choices <- subset(first_choices, first_choices$Species != "T") # no Trachops
-first_choices$first_visit <- factor(first_choices$first_visit, levels = c("location", "sound", "smell", "neither", "nearest"))
+first_choices$first_visit <- factor(first_choices$first_visit, levels = c("location", "sound", "smell", "neither"))
+
+#######This removes the nearest columns##########
+drops <- c("vists_nearest","pct_visits_nearest")
+
+LocVSound <- LocVSound[ , !(names(LocVSound) %in% drops)]
+LocVSmell <- LocVSmell[ , !(names(LocVSmell) %in% drops)]
+SoundVSmell <- SoundVSmell[ , !(names(SoundVSmell) %in% drops)]
+########################################
+
+## COLOR PALETTE SETTINGS ##
+
+Lo <-   "#468902"       # A blue color,
+Art <-"#133954"    # A green color
+Mypal <- c(Lo, Art)
 
 ```
 
@@ -147,7 +164,7 @@ Is there a difference between AJs and lophostoma? (anova? )
 #### Reshape data for plotting and manipulation with percents
 ```{r}
 # pull out just the relevent columns: 
-LocVSound_AJ_L_pcts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "pct_visits_sound", "pct_visits_sound", "pct_visits_neither", "pct_visits_nearest")]
+LocVSound_AJ_L_pcts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither")]
 head(LocVSound_AJ_L_pcts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
 colnames(LocVSound_AJ_L_pcts)
@@ -159,7 +176,7 @@ head(mLocVSound)
 #### Reshape data for plotting and manipulation with COUNTS
 ```{r}
 # pull out just the relevent columns: 
-LocVSound_AJ_L_cnts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "visits_sound", "visits_sound", "visits_neither", "visits_nearest")]
+LocVSound_AJ_L_cnts<- LocVSound_AJ_L[ , c("Bat.ID", "Species", "visits_loc", "visits_sound", "visits_neither")]
 head(LocVSound_AJ_L_cnts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
 colnames(LocVSound_AJ_L_cnts)
@@ -327,14 +344,14 @@ boot_ci <- function(x){
 mLocVSound_na<-mLocVSound[complete.cases(mLocVSound[ ,4:6]), ] #removes NA rows in value columns 4:6, this might now make sense if I change the number of columns
 
 #New database without NAs in the selected columns
-LocVSound_AJ_L_na <- LocVSound_AJ_L[complete.cases(LocVSound_AJ_L[ ,c("visits_sound", "visits_sound",  "visits_neither", "pct_visits_sound", "pct_visits_sound", "pct_visits_neither")]), ]
+LocVSound_AJ_L_na <- LocVSound_AJ_L[complete.cases(LocVSound_AJ_L[ ,c("visits_loc", "visits_sound",  "visits_neither", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither")]), ]
 
-#The CI's for sound v Sound, percentages
+#The CI's for loc v Sound, percentages
 set.seed(1)
 LvS_pct_CI <- do.call(data.frame,aggregate(value ~ Species + variable , boot_ci, data = mLocVSound_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
 colnames(LvS_pct_CI) <- c("Species", "variable", "low", "mean", "high")
 
-# The CIs for sound V Sound, counts
+# The CIs for Loc V Sound, counts
 LvS_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci, data = mLocVSound_na))
 LvS_count_CI
 
@@ -348,7 +365,7 @@ colnames(LvS_count_CI) <- c("Species", "variable", "low", "mean", "high")
 
 ## Plotting
 
-## plotting confidence intervals for pct and % visits to platforms 
+## plotting confidence intervals for pct and % visits to platforms, LvS 
 ```{r}
 #LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
 
@@ -361,34 +378,39 @@ pd = position_dodge(0.5) # move bars .05 to the left and right
 LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
 LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
 LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-LvS_pct_CI_p <- LvS_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
 LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
-LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither"))  # Relabelling X axis
 LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
 LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
-LvS_pct_CI_p                    
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 
+
+LvS_pct_CI_p                    
+ggsave("LvS_pct_CI_p.png" )
 
 #count plot
 LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
 LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
 LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-LvS_count_CI_p <- LvS_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
 LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
-LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither"))  # Relabelling X axis
 LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
 LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
 LvS_count_CI_p 
+
+ggsave("LvS_count_CI_p.png" )
 
 ```
 
-#### Plotting % of visits to the different platforms
+#### Plotting % of visits to the different platforms, LvS
 ```{r}
 LocVSound_bar <- ggplot(data =mLocVSound, aes(x = variable, y = value))
 LocVSound_bar <- LocVSound_bar + geom_boxplot(aes(fill=Species))
@@ -397,12 +419,13 @@ LocVSound_bar <- LocVSound_bar + theme(panel.grid.major = element_blank(), panel
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 LocVSound_bar <- LocVSound_bar + xlab("Cues")
 LocVSound_bar <- LocVSound_bar + ylab("Proportion of total visits")
-LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_sound" = "Sound",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
-LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+#LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar <- LocVSound_bar + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSound_bar
 
-ggsave("LocVSound.png")
+ggsave("LocVSound_pcts.png")
 ```
 
 #### Plotting absolute number of visits to the different platforms
@@ -414,9 +437,9 @@ LocVSound_bar_cnts <- LocVSound_bar_cnts + theme(panel.grid.major = element_blan
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 LocVSound_bar_cnts <- LocVSound_bar_cnts + xlab("Cues")
 LocVSound_bar_cnts <- LocVSound_bar_cnts + ylab("Number of visits")
-LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Location", "visits_sound" = "Sound",
-                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
-LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_x_discrete(labels=c("visits_loc" = "Location", "visits_sound" = "Sound",
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSound_bar_cnts
 
 ggsave("LocVSound_cnts.png")
@@ -426,44 +449,17 @@ ggsave("LocVSound_cnts.png")
 
 ##First choices/ visits by species
 
-## clean data for first choices
-```{r}
-## Think about figuring out how to incorporate 'nearest'
-## Take out rows with weird values for first visit
-LocVSound_fc= subset(LocVSound, LocVSound$first_visit != "" & LocVSound$first_visit != "neither, nearest")
-LocVSound_fc$first_visit<- factor(LocVSound_fc$first_visit)
-#View(LocVSound_fc)
-levels(LocVSound_fc$first_visit)
-```
-
-## Make new data frame with summary data for first visits
-```{r}
-# This does the same thing, but makes a new dataframe to do it
-#summarize occurances
-first_visits <- as.data.frame(table(LocVSound_fc$first_visit, LocVSound_fc$Species)) #summarized by species into table
-
-
-
-names(first_visits)<- c("Cue", "Species", "Visits")
-## For plotting purposes, need to replace 0's with a small number, not meaningful
- first_visits_fp <- first_visits #first visits for plot
- first_visits_fp[first_visits_fp == 0] <- 0.03 
- 
- #reorder factor
- first_visits_fp$Cue<- factor(first_visits_fp$Cue, levels = c("location", "sound", "neither"))
-#View(first_visits_fp)
-
-first_visits_long <- dcast(first_visits, Cue~Species ) #reshapes into long format
-first_visits_long
-```
 ## Make new data frame with summary data for first visits
 ```{r}
 head(first_choices)
-fc_LocVSound<- first_choices[first_choices$Test=="LocVSound",]
+fc_LocVSound<- first_choices[first_choices$Test=="LocVSound" & first_choices$first_visit!= "nearest",] #pulling out Loc V Sound and cutting nearests
 head(fc_LocVSound)
 
-unique(fc_LocVSound$first_visit)
 
+
+fc_LocVSound$first_visit <- factor(fc_LocVSound$first_visit, levels = c("location", "sound", "neither"))  #redo factor order, removes extra levels
+
+unique(fc_LocVSound$first_visit)
 
 ```
 
@@ -481,11 +477,13 @@ names(first_visits_LvS)<- c("Cue", "Species", "Visits")
  first_visits_LvS_fp[first_visits_LvS_fp == 0] <- 0.03 
  
  #reorder factor
-# first_visits_LvS_fp$Cue<- factor(first_visits_LvS_fp$Cue, levels = c("sound", "smell", "neither", "nearest"))
+#first_visits_LvS_fp$Cue<- factor(first_visits_LvS_fp$Cue, levels = c("location", "sound", "neither", "nearest"))
 #View(first_visits_LvS_fp)
 
-first_visits_long <- dcast(first_visits_LvS, Cue~Species ) #reshapes into wide format
-head(first_visits_long)
+first_visits_LvS_wide <- dcast(first_visits_LvS, Cue~Species ) #reshapes into wide format
+head(first_visits_LvS_wide)
+
+
 ```
 
 
@@ -499,13 +497,16 @@ Did the species visit differently?
 # Use exact multinomial test: categorical data, small sample sizes
 
 # AJs are in column #2:
-observed_LvS_AJ <- c(first_visits_long[first_visits_long=="Sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="sound", 2])
+observed_LvS_AJ <- c(first_visits_LvS_wide[first_visits_LvS_wide=="location", 2], first_visits_LvS_wide[first_visits_LvS_wide=="neither", 2], first_visits_LvS_wide[first_visits_LvS_wide=="sound", 2])
 observed_LvS_AJ    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- #mult_test_LvS_AJ <- multinomial.test(observed_LvS_AJ, prob) #exact multinomial test
- #mult_test_LvS_AJ
+mult_test_LvS_AJ <- multinomial.test(observed_LvS_AJ, prob) #exact multinomial test
+mult_test_LvS_AJ
+
+# Exact multinomial test suggests that This is more visits to Location that expected at random
+
 
  
 ```
@@ -518,31 +519,36 @@ So AJs went to Sound more than the other places
 # Use exact multinomial test: categorical data, small sample sizes
 
 # Ls are in column #2:
-observed_LvS_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="sound", 3])
+observed_LvS_L <- c(first_visits_LvS_wide[first_visits_LvS_wide=="location", 2], first_visits_LvS_wide[first_visits_LvS_wide=="neither", 2], first_visits_LvS_wide[first_visits_LvS_wide=="sound", 2])
 observed_LvS_L    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- #mult_test_LvS_L <- multinomial.test(observed_LvS_L, prob) #exact multinomial test
- #mult_test_LvS_L
+mult_test_LvS_L <- multinomial.test(observed_LvS_L, prob) #exact multinomial test
+mult_test_LvS_L
+
+# Exact multinomial test suggests that This is more visits to Location that expected at random
+
+
 
 ```
-Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
-
+Can reject null hypothesis that Lophostoma went to the 3 cues first equally
+p=  0.0172
 
 #### Plot first visits
 ```{r}
-First_visits_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
-First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+First_visits_LvS_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_LvS_p <- First_visits_LvS_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
 
-First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+First_visits_LvS_p  <- First_visits_LvS_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("Sound" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
-First_visits_p  <- First_visits_p  + xlab("Cues")
-First_visits_p  <- First_visits_p  + ylab("Total visits")
-First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+First_visits_LvS_p  <- First_visits_LvS_p  + scale_x_discrete( labels=c("location" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_LvS_p  <- First_visits_LvS_p  + xlab("Cues")
+First_visits_LvS_p  <- First_visits_LvS_p  + ylab("Total visits")
 
-First_visits_p
+First_visits_LvS_p  <- First_visits_LvS_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+First_visits_LvS_p
 
   ggsave("Loc_v_sound_first_visit.png")
  # rm(First_visits_p)
@@ -627,7 +633,7 @@ Is there a difference between AJs and lophostoma? (anova? )
 #### Reshape data for plotting and manipulation with percents
 ```{r}
 # pull out just the relevent columns: 
-LocVSmell_AJ_L_pcts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_smell", "pct_visits_neither", "pct_visits_nearest")]
+LocVSmell_AJ_L_pcts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_loc", "pct_visits_smell", "pct_visits_neither" )]
 head(LocVSmell_AJ_L_pcts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
 colnames(LocVSmell_AJ_L_pcts)
@@ -639,7 +645,7 @@ head(mLocVSmell)
 #### Reshape data for plotting and manipulation with COUNTS
 ```{r}
 # pull out just the relevent columns: 
-LocVSmell_AJ_L_cnts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_loc", "visits_smell", "visits_neither", "visits_nearest")]
+LocVSmell_AJ_L_cnts<- LocVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_loc", "visits_smell", "visits_neither" )]
 head(LocVSmell_AJ_L_cnts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
 colnames(LocVSmell_AJ_L_cnts)
@@ -753,11 +759,11 @@ boxplot(value_sqrt ~  variable* Species, data = mLocVSmell) #sqrt
 boxplot(value_cub ~  variable* Species, data = mLocVSmell) #cub, pretty good
 boxplot(value_log ~  variable* Species, data = mLocVSmell) # too strong
 
-counts
+#counts
 boxplot(value ~  variable* Species, data = mLocVSmell_cnts) #original
 boxplot(value_sqrt ~  variable* Species, data = mLocVSmell_cnts) #sqrt, prob best
 boxplot(value_cub ~  variable* Species, data = mLocVSmell_cnts) #cub, 
-boxplot(value_log ~  variable* Species, data = mLocVSmell_cnts) # too strong
+#boxplot(value_log ~  variable* Species, data = mLocVSmell_cnts) # too strong
 
 bartlett.test( value_sqrt ~  interaction(variable, Species), data = mLocVSmell)
 bartlett.test( value_sqrt ~  interaction(variable, Species), data = mLocVSmell_cnts)
@@ -775,7 +781,7 @@ hist(mLocVSmell_cnts$value[mLocVSmell_cnts$Species=="L"], breaks=6)
 hist(mLocVSmell_cnts$value_sqrt[mLocVSmell_cnts$Species=="L"], breaks=6)
 hist(mLocVSmell_cnts$value_cub[mLocVSmell_cnts$Species=="L"], breaks=6)
 
-hist(mLocVSmell_cnts$value_log[mLocVSmell_cnts$Species=="L"], breaks=8)
+#hist(mLocVSmell_cnts$value_log[mLocVSmell_cnts$Species=="L"], breaks=8)
 str(mLocVSmell_cnts)
 table(mLocVSmell_cnts$value)
 sum(mLocVSmell_cnts$value == 0)
@@ -824,7 +830,7 @@ boot_ci <- function(x){
 mLocVSmell_na<-mLocVSmell[complete.cases(mLocVSmell[ ,4:8]), ] #removes NA rows in value columns 4:6, this might not make sense if I change the number of columns
 head(mLocVSmell)
 #New database without NAs in the selected columns
-LocVSmell_AJ_L_na <- LocVSmell_AJ_L[complete.cases(LocVSmell_AJ_L[ ,c("visits_sound", "visits_smell",  "visits_neither", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither")]), ]
+LocVSmell_AJ_L_na <- LocVSmell_AJ_L[complete.cases(LocVSmell_AJ_L[ ,c("visits_loc", "visits_smell",  "visits_neither", "pct_visits_loc", "pct_visits_smell", "pct_visits_neither")]), ]
 
 #The CI's for sound v Smell, percentages
 set.seed(1)
@@ -833,7 +839,7 @@ colnames(LvSm_pct_CI) <- c("Species", "variable", "low", "mean", "high")
 
 # The CIs for sound V Smell, counts
 LvSm_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci, data = mLocVSmell_na))
-LvSm_count_CI
+head(LvSm_count_CI)
 
 colnames(LvSm_count_CI) <- c("Species", "variable", "low", "mean", "high")
 
@@ -863,11 +869,13 @@ LvSm_pct_CI_p <- LvSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
 LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
 LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
 LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LvSm_pct_CI_p                    
 
+ggsave("LvSm_pct_CI_p.png")
 
 #count plot
 LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
@@ -877,16 +885,18 @@ LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", l
 LvSm_count_CI_p <- LvSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
-LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
 LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
 LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LvSm_count_CI_p 
 
+ggsave("LvSm_count_CI_p.png" )
 ```
 #check out nearest. Is there a weird value?
 
-#### Plotting % of visits to the different platforms
+#### Plotting % of visits to the different platforms, LvSm
 ```{r}
 LocVSmell_bar <- ggplot(data =mLocVSmell, aes(x = variable, y = value))
 LocVSmell_bar <- LocVSmell_bar + geom_boxplot(aes(fill=Species))
@@ -896,8 +906,8 @@ panel.background = element_blank(), axis.line = element_line(colour = "black"), 
 LocVSmell_bar <- LocVSmell_bar + xlab("Cues")
 LocVSmell_bar <- LocVSmell_bar + ylab("Proportion of total visits")
 LocVSmell_bar <- LocVSmell_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Location", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
-LocVSmell_bar <- LocVSmell_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSmell_bar <- LocVSmell_bar +  scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSmell_bar
 
 #ggsave("LocVSmell.png")
@@ -912,9 +922,9 @@ LocVSmell_bar_cnts <- LocVSmell_bar_cnts + theme(panel.grid.major = element_blan
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 LocVSmell_bar_cnts <- LocVSmell_bar_cnts + xlab("Cues")
 LocVSmell_bar_cnts <- LocVSmell_bar_cnts + ylab("Number of visits")
-LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Location", "visits_smell" = "Smell",
-                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
-LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_x_discrete(labels=c("visits_loc" = "Location", "visits_smell" = "Smell",
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts +  scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSmell_bar_cnts
 
 ggsave("LocVSmell_cnts.png")
@@ -922,52 +932,45 @@ ggsave("LocVSmell_cnts.png")
 #rm(LocVSmell_bar)
 
 
-##First choices/ visits by species
 
 
-
-## clean data for first choices
-```{r}
-## Think about figuring out how to incorporate 'nearest'
-## Take out rows with weird values for first visit
-LocVSmell_fc= subset(LocVSmell, LocVSmell$first_visit != "" & LocVSmell$first_visit != "neither, nearest")
-LocVSmell_fc$first_visit<- factor(LocVSmell_fc$first_visit)
-#View(LocVSmell_fc)
-levels(LocVSmell_fc$first_visit)
-```
+#First choices/ visits by species
 
 ## Make new data frame with summary data for first visits
 ```{r}
 head(first_choices)
-fc_LocVSound<- first_choices[first_choices$Test=="LocVSound",]
-head(fc_LocVSound)
+fc_LocVSmell<- first_choices[first_choices$Test=="LocVSmell" & first_choices$first_visit!= "nearest",] #pulling out Loc V smell and cutting nearests
+head(fc_LocVSmell)
 
-unique(fc_LocVSound$first_visit)
 
+
+fc_LocVSmell$first_visit <- factor(fc_LocVSmell$first_visit, levels = c("location", "smell", "neither"))  #redo factor order, removes extra levels
+
+unique(fc_LocVSmell$first_visit)
 
 ```
-
 
 
 ```{r}
 # This does the same thing, but makes a new dataframe to do it
 #summarize occurances
-first_visits_LvS <- as.data.frame(table(fc_LocVSound$first_visit, fc_LocVSound$Species)) #summarized by species into table
+first_visits_SvSm <- as.data.frame(table(fc_LocVSmell$first_visit, fc_LocVSmell$Species)) #summarized by species into table
 
 
 
-names(first_visits_LvS)<- c("Cue", "Species", "Visits")
+names(first_visits_LvSm)<- c("Cue", "Species", "Visits")
 ## For plotting purposes, need to replace 0's with a small number, not meaningful
- first_visits_LvS_fp <- first_visits_LvS #first visits for plot
- first_visits_LvS_fp[first_visits_LvS_fp == 0] <- 0.03 
+ first_visits_LvSm_fp <- first_visits_LvSm #first visits for plot
+ first_visits_LvSm_fp[first_visits_LvSm_fp == 0] <- 0.03 
  
- #reorder factor
- first_visits_LvS_fp$Cue<- factor(first_visits_LvS_fp$Cue, levels = c("sound", "smell", "neither", "nearest"))
-#View(first_visits_LvS_fp)
+ 
+first_visits_LvSm_wide <- dcast(first_visits_LvSm, Cue~Species ) #reshapes into wide format
+head(first_visits_LvSm_wide)
 
-first_visits_long <- dcast(first_visits_LvS, Cue~Species ) #reshapes into wide format
-head(first_visits_long)
+
 ```
+
+
 ## STATS first visit
 Did the bats visit the platforms first equally?
 Did the species visit differently?
@@ -978,17 +981,20 @@ Did the species visit differently?
 # Use exact multinomial test: categorical data, small sample sizes
 
 # AJs are in column #2:
-observed_LvSm_AJ <- c(first_visits_long[first_visits_long=="Sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="smell", 2])
+observed_LvSm_AJ <- c(first_visits_LvSm_wide[first_visits_LvSm_wide=="location", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="neither", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="smell", 2])
 observed_LvSm_AJ    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- #mult_test_LvSm_AJ <- multinomial.test(observed_LvSm_AJ, prob) #exact multinomial test
- #mult_test_LvSm_AJ
+mult_test_LvSm_AJ <- multinomial.test(observed_LvSm_AJ, prob) #exact multinomial test
+mult_test_LvSm_AJ
+
+# Exact multinomial test suggests that This is more visits to Location that expected at random
+
 
  
 ```
-So AJs went to Sound more than the other places
+So AJs went to location more than the other places
 
 # first visits, exact multinomial test: Lophos
 ```{r}
@@ -997,34 +1003,38 @@ So AJs went to Sound more than the other places
 # Use exact multinomial test: categorical data, small sample sizes
 
 # Ls are in column #2:
-observed_LvSm_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="smell", 3])
+observed_LvSm_L <- c(first_visits_LvSm_wide[first_visits_LvSm_wide=="location", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="neither", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="smell", 2])
 observed_LvSm_L    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- #mult_test_LvSm_L <- multinomial.test(observed_LvSm_L, prob) #exact multinomial test
- #mult_test_LvSm_L
+mult_test_LvSm_L <- multinomial.test(observed_LvSm_L, prob) #exact multinomial test
+mult_test_LvSm_L
+
+# Exact multinomial test suggests that This is more visits to Location that expected at random
+
+
 
 ```
-Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
-
+Can reject null hypothesis that Lophostoma went to the 3 cues first equally
+p=  0.0139
 
 #### Plot first visits
 ```{r}
-First_visits_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
-First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+First_visits_LvSm_p <- ggplot(data =first_visits_LvSm_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_LvSm_p <- First_visits_LvSm_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
 
-First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+First_visits_LvSm_p  <- First_visits_LvSm_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("location" = "Location", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
-First_visits_p  <- First_visits_p  + xlab("Cues")
-First_visits_p  <- First_visits_p  + ylab("Total visits")
-First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+First_visits_LvSm_p  <- First_visits_LvSm_p  + scale_x_discrete( labels=c("location" = "Location", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_LvSm_p  <- First_visits_LvSm_p  + xlab("Cues")
+First_visits_LvSm_p  <- First_visits_LvSm_p  + ylab("Total visits")
+First_visits_LvSm_p  <- First_visits_LvSm_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
 
-First_visits_p
+First_visits_LvSm_p
 
   ggsave("Loc_v_smell_first_visit.png")
- # rm(First_visits_p)
+ # rm(First_visits_LvSm_p)
 ```
 
 
@@ -1067,7 +1077,7 @@ SUMMARIZING AVERAGE proportion of visits to each cue
 # 
 
 Avg_pct_visits<-SoundVSmell_AJ_L %>% group_by(Species) %>%
-      summarise(avg_sound = mean(pct_visits_sound, na.rm=TRUE), avg_smell = mean(pct_visits_smell, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE), avg_nearest = mean(pct_visits_nearest, na.rm=TRUE) )
+      summarise(avg_sound = mean(pct_visits_sound, na.rm=TRUE), avg_smell = mean(pct_visits_smell, na.rm=TRUE),avg_neither = mean(pct_visits_neither, na.rm=TRUE) )
 Avg_pct_visits
 
 
@@ -1119,7 +1129,7 @@ Is there a difference between AJs and lophostoma? (anova? )
 #### Reshape data for plotting and manipulation with percents
 ```{r}
 # pull out just the relevent columns: 
-SoundVSmell_AJ_L_pcts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither", "pct_visits_nearest")]
+SoundVSmell_AJ_L_pcts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "pct_visits_sound", "pct_visits_smell", "pct_visits_neither" )]
 head(SoundVSmell_AJ_L_pcts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction. 
 colnames(SoundVSmell_AJ_L_pcts)
@@ -1131,7 +1141,7 @@ head(mSoundVSmell)
 #### Reshape data for plotting and manipulation with COUNTS
 ```{r}
 # pull out just the relevent columns: 
-SoundVSmell_AJ_L_cnts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_sound", "visits_smell", "visits_neither", "visits_nearest")]
+SoundVSmell_AJ_L_cnts<- SoundVSmell_AJ_L[ , c("Bat.ID", "Species", "visits_sound", "visits_smell", "visits_neither" )]
 head(SoundVSmell_AJ_L_cnts)
 ## Alternatively could just put all the rows I don't want melted into "id" in the following fuction, which would save the rest of the data
 colnames(SoundVSmell_AJ_L_cnts)
@@ -1250,7 +1260,7 @@ boxplot(value_log ~  variable* Species, data = mSoundVSmell) # too strong
 boxplot(value ~  variable* Species, data = mSoundVSmell_cnts) #original
 boxplot(value_sqrt ~  variable* Species, data = mSoundVSmell_cnts) #sqrt, prob best
 boxplot(value_cub ~  variable* Species, data = mSoundVSmell_cnts) #cub, 
-boxplot(value_log ~  variable* Species, data = mSoundVSmell_cnts) # too strong
+#boxplot(value_log ~  variable* Species, data = mSoundVSmell_cnts) # too strong
 
 bartlett.test( value_sqrt ~  interaction(variable, Species), data = mSoundVSmell)
 bartlett.test( value_sqrt ~  interaction(variable, Species), data = mSoundVSmell_cnts)
@@ -1357,11 +1367,12 @@ SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), pan
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
 SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
 SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
 SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 SovSm_pct_CI_p                    
-
+ggsave("SovSm_pct_CI_p.png" )
 
 #count plot
 SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
@@ -1372,10 +1383,13 @@ SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
 
 SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
 SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
-SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean number of visits")
-SovSm_count_CI_p 
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
+SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_count_CI_p   
+
+ggsave("SovSm_count_CI_p.png")
 
 ```
 #check out nearest. Is there a weird value?
@@ -1390,8 +1404,8 @@ panel.background = element_blank(), axis.line = element_line(colour = "black"), 
 SoundVSmell_bar <- SoundVSmell_bar + xlab("Cues")
 SoundVSmell_bar <- SoundVSmell_bar + ylab("Proportion of total visits")
 SoundVSmell_bar <- SoundVSmell_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-                              "pct_visits_neither" = "Neither", "pct_visits_nearest" = "Nearest"))  # Relabelling X axis
-SoundVSmell_bar <- SoundVSmell_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SoundVSmell_bar <- SoundVSmell_bar + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 SoundVSmell_bar
 
 ggsave("SoundVSmell.png")
@@ -1407,8 +1421,8 @@ panel.background = element_blank(), axis.line = element_line(colour = "black"), 
 SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + xlab("Cues")
 SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + ylab("Number of visits")
 SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Sound", "visits_smell" = "Smell",
-                              "visits_neither" = "Neither", "visits_nearest" = "Nearest"))  # Relabelling X axis
-SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 SoundVSmell_bar_cnts
 
 ggsave("SoundVSmell_cnts.png")
@@ -1416,38 +1430,44 @@ ggsave("SoundVSmell_cnts.png")
 #rm(SoundVSmell_bar)
 
 
-##First choices/ visits by species
 
-## clean data for first choices
-```{r}
-## Think about figuring out how to incorporate 'nearest'
-## Take out rows with weird values for first visit
-SoundVSmell_fc= subset(SoundVSmell, SoundVSmell$first_visit != "" & SoundVSmell$first_visit != "neither, nearest")
-SoundVSmell_fc$first_visit<- factor(SoundVSmell_fc$first_visit)
-#View(SoundVSmell_fc)
-levels(SoundVSmell_fc$first_visit)
-```
+#First choices/ visits by species
 
 ## Make new data frame with summary data for first visits
 ```{r}
+head(first_choices)
+fc_SoundVSmell<- first_choices[first_choices$Test=="SovSm" & first_choices$first_visit!= "nearest",] #pulling out Loc V smell and cutting nearests, leave nearests for now
+head(fc_SoundVSmell)
+
+
+
+fc_SoundVSmell$first_visit <- factor(fc_SoundVSmell$first_visit, levels = c("sound", "smell", "neither"))  #redo factor order, removes extra levels
+
+unique(fc_SoundVSmell$first_visit)
+
+```
+
+
+```{r}
 # This does the same thing, but makes a new dataframe to do it
 #summarize occurances
-first_visits <- as.data.frame(table(SoundVSmell_fc$first_visit, SoundVSmell_fc$Species)) #summarized by species into table
+first_visits_SvSm <- as.data.frame(table(fc_SoundVSmell$first_visit, fc_SoundVSmell$Species)) #summarized by species into table
 
 
 
-names(first_visits)<- c("Cue", "Species", "Visits")
+names(first_visits_SvSm)<- c("Cue", "Species", "Visits")
 ## For plotting purposes, need to replace 0's with a small number, not meaningful
- first_visits_fp <- first_visits #first visits for plot
- first_visits_fp[first_visits_fp == 0] <- 0.03 
+ first_visits_SvSm_fp <- first_visits_SvSm #first visits for plot
+ first_visits_SvSm_fp[first_visits_SvSm_fp == 0] <- 0.03 
  
- #reorder factor
- first_visits_fp$Cue<- factor(first_visits_fp$Cue, levels = c("sound", "smell", "neither"))
-#View(first_visits_fp)
+ 
+first_visits_SvSm_wide <- dcast(first_visits_SvSm, Cue~Species ) #reshapes into wide format
+head(first_visits_SvSm_wide)
 
-first_visits_long <- dcast(first_visits, Cue~Species ) #reshapes into long format
-first_visits_long
+
 ```
+
+
 ## STATS first visit
 Did the bats visit the platforms first equally?
 Did the species visit differently?
@@ -1458,54 +1478,361 @@ Did the species visit differently?
 # Use exact multinomial test: categorical data, small sample sizes
 
 # AJs are in column #2:
-observed_SovSm_AJ <- c(first_visits_long[first_visits_long=="sound", 2], first_visits_long[first_visits_long=="neither", 2], first_visits_long[first_visits_long=="smell", 2])
-observed_SovSm_AJ    #observed number of visits to the three different platforms
+observed_SvSm_AJ <- c(first_visits_SvSm_wide[first_visits_SvSm_wide=="sound", 2], first_visits_SvSm_wide[first_visits_SvSm_wide=="smell", 2], first_visits_SvSm_wide[first_visits_SvSm_wide=="neither", 2])
+observed_SvSm_AJ    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- ##mult_test_SovSm_AJ <- multinomial.test(observed_SovSm_AJ, prob) #exact multinomial test
- ##mult_test_SovSm_AJ
+mult_test_SvSm_AJ <- multinomial.test(observed_SvSm_AJ, prob) #exact multinomial test
+mult_test_SvSm_AJ
+
+# Exact multinomial test suggests that these are not different than random
+
 
  
 ```
-So AJs went to Sound more than the other places
+So AJs went to location more than the other places
 
 # first visits, exact multinomial test: Lophos
 ```{r}
 ## MUST CHANGE THESE NUMBERS MANUALLY ##
-# Did the Lophos  visit the three platforms equally?
+# Did the Lophoss  visit the three platforms equally?
 # Use exact multinomial test: categorical data, small sample sizes
 
-# Ls are in column #2:
-observed_SovSm_L <- c(first_visits_long[first_visits_long=="Sound", 3], first_visits_long[first_visits_long=="neither", 3], first_visits_long[first_visits_long=="smell", 3])
-observed_SovSm_L    #observed number of visits to the three different platforms
+# Ls are in column #3:
+observed_SvSm_L <- c(first_visits_SvSm_wide[first_visits_SvSm_wide=="sound", 3], first_visits_SvSm_wide[first_visits_SvSm_wide=="smell", 3], first_visits_SvSm_wide[first_visits_SvSm_wide=="neither", 3])
+observed_SvSm_L    #observed number of visits to the three different platforms
 
 prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
- #mult_test_SovSm_L <- multinomial.test(observed_SovSm_L, prob) #exact multinomial test
- #mult_test_SovSm_L
+mult_test_SvSm_L <- multinomial.test(observed_SvSm_L, prob) #exact multinomial test
+mult_test_SvSm_L
+
+# Exact multinomial test suggests that these are not different than random
+
+
 
 ```
-Can't reject null hypothesis that Lophostoma went to the 3 cues first equally
-
+Can NOT reject null hypothesis that Lophostoma went to the 3 cues first equally
+p=  0.0139
 
 #### Plot first visits
 ```{r}
-First_visits_p <- ggplot(data =first_visits_fp, aes(x = Cue, y = Visits, fill = Species ))
-First_visits_p <- First_visits_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+First_visits_SvSm_p <- ggplot(data =first_visits_SvSm_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_SvSm_p <- First_visits_SvSm_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
 
-First_visits_p  <- First_visits_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+First_visits_SvSm_p  <- First_visits_SvSm_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-First_visits_p  <- First_visits_p  + scale_x_discrete( labels=c("Sound" = "Sound", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
-First_visits_p  <- First_visits_p  + xlab("Cues")
-First_visits_p  <- First_visits_p  + ylab("Total visits")
-First_visits_p  <- First_visits_p  + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+First_visits_SvSm_p  <- First_visits_SvSm_p  + scale_x_discrete( labels=c("sound" = "Sound", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_SvSm_p  <- First_visits_SvSm_p  + xlab("Cues")
+First_visits_SvSm_p  <- First_visits_SvSm_p  + ylab("Total visits")
+First_visits_SvSm_p  <- First_visits_SvSm_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 
-First_visits_p
+First_visits_SvSm_p
 
   ggsave("Sound_v_smell_first_visit.png")
+ # rm(First_visits_SvSm_p)
+```
+#########################################################################
+
+
+###PLOT CORNER#####
+
+## plotting confidence intervals for pct and % visits to platforms, LvS 
+```{r}
+#LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
+LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+
+LvS_pct_CI_p                    
+ggsave("LvS_pct_CI_p.pdf" , width = 3.05, length = 1.89 )
+
+#count plot
+LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
+LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
+LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+LvS_count_CI_p 
+
+ggsave("LvS_count_CI_p.pdf" , width = 3.05, length = 1.89 )
+
+```
+#### Plotting % of visits to the different platforms, LvS
+```{r}
+LocVSound_bar <- ggplot(data =mLocVSound, aes(x = variable, y = value))
+LocVSound_bar <- LocVSound_bar + geom_boxplot(aes(fill=Species))
+LocVSound_bar <- LocVSound_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSound_bar <- LocVSound_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSound_bar <- LocVSound_bar + xlab("Cues")
+LocVSound_bar <- LocVSound_bar + ylab("Proportion of total visits")
+LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+#LocVSound_bar <- LocVSound_bar + scale_fill_discrete(labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar <- LocVSound_bar + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar
+
+ggsave("LocVSound_pcts.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plotting absolute number of visits to the different platforms, LvS
+```{r}
+LocVSound_bar_cnts <- ggplot(data =mLocVSound_cnts, aes(x = variable, y = value))
+LocVSound_bar_cnts <- LocVSound_bar_cnts + geom_boxplot(aes(fill=Species))
+LocVSound_bar_cnts <- LocVSound_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSound_bar_cnts <- LocVSound_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSound_bar_cnts <- LocVSound_bar_cnts + xlab("Cues")
+LocVSound_bar_cnts <- LocVSound_bar_cnts + ylab("Number of visits")
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_x_discrete(labels=c("visits_loc" = "Location", "visits_sound" = "Sound",
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSound_bar_cnts <- LocVSound_bar_cnts + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSound_bar_cnts
+
+ggsave("LocVSound_cnts.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plot first visits, LvS
+```{r}
+First_visits_LvS_p <- ggplot(data =first_visits_LvS_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_LvS_p <- First_visits_LvS_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_LvS_p  <- First_visits_LvS_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_LvS_p  <- First_visits_LvS_p  + scale_x_discrete( labels=c("location" = "Location", "sound" = "Sound","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_LvS_p  <- First_visits_LvS_p  + xlab("Cues")
+First_visits_LvS_p  <- First_visits_LvS_p  + ylab("Total visits")
+
+First_visits_LvS_p  <- First_visits_LvS_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+First_visits_LvS_p
+
+  ggsave("Loc_v_sound_first_visit.pdf" , width = 3.05, length = 1.89)
  # rm(First_visits_p)
 ```
+
+## plotting confidence intervals for pct and % visits to platforms , LvSm
+```{r}
+#LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_pct_CI_p <- LvSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_pct_CI_p                    
+
+ggsave("LvSm_pct_CI_p.pdf" , width = 3.05, length = 1.89)
+
+#count plot
+LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_count_CI_p <- LvSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
+LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_count_CI_p 
+
+ggsave("LvSm_count_CI_p.pdf" , width = 3.05, length = 1.89 )
+```
+
+#### Plotting % of visits to the different platforms, LvSm
+```{r}
+LocVSmell_bar <- ggplot(data =mLocVSmell, aes(x = variable, y = value))
+LocVSmell_bar <- LocVSmell_bar + geom_boxplot(aes(fill=Species))
+LocVSmell_bar <- LocVSmell_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSmell_bar <- LocVSmell_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSmell_bar <- LocVSmell_bar + xlab("Cues")
+LocVSmell_bar <- LocVSmell_bar + ylab("Proportion of total visits")
+LocVSmell_bar <- LocVSmell_bar + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSmell_bar <- LocVSmell_bar +  scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSmell_bar
+
+ggsave("LocVSmell_pct.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plotting absolute number of visits to the different platforms, LvSm
+
+```{r}
+LocVSmell_bar_cnts <- ggplot(data =mLocVSmell_cnts, aes(x = variable, y = value))
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + geom_boxplot(aes(fill=Species))
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + xlab("Cues")
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + ylab("Number of visits")
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts + scale_x_discrete(labels=c("visits_loc" = "Location", "visits_smell" = "Smell",
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+LocVSmell_bar_cnts <- LocVSmell_bar_cnts +  scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LocVSmell_bar_cnts
+
+ggsave("LocVSmell_cnts.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plot first visits
+```{r}
+First_visits_LvSm_p <- ggplot(data =first_visits_LvSm_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_LvSm_p <- First_visits_LvSm_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_LvSm_p  <- First_visits_LvSm_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_LvSm_p  <- First_visits_LvSm_p  + scale_x_discrete( labels=c("location" = "Location", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_LvSm_p  <- First_visits_LvSm_p  + xlab("Cues")
+First_visits_LvSm_p  <- First_visits_LvSm_p  + ylab("Total visits")
+First_visits_LvSm_p  <- First_visits_LvSm_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum", "T" = "T. cirrhosus"))
+
+First_visits_LvSm_p
+
+  ggsave("Loc_v_smell_first_visit.pdf" , width = 3.05, length = 1.89)
+ # rm(First_visits_LvSm_p)
+```
+
+###Sound v Smell####
+
+## plotting confidence intervals for pct and % visits to platforms 
+```{r}
+#SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
+SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_pct_CI_p                    
+ggsave("SovSm_pct_CI_p.pdf" , width = 3.05, length = 1.89 )
+
+#count plot
+SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
+SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_count_CI_p   
+
+ggsave("SovSm_count_CI_p.pdf" , width = 3.05, length = 1.89)
+
+```
+
+#### Plotting % of visits to the different platforms
+```{r}
+SoundVSmell_bar <- ggplot(data =mSoundVSmell, aes(x = variable, y = value))
+SoundVSmell_bar <- SoundVSmell_bar + geom_boxplot(aes(fill=Species))
+SoundVSmell_bar <- SoundVSmell_bar + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+SoundVSmell_bar <- SoundVSmell_bar + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+SoundVSmell_bar <- SoundVSmell_bar + xlab("Cues")
+SoundVSmell_bar <- SoundVSmell_bar + ylab("Proportion of total visits")
+SoundVSmell_bar <- SoundVSmell_bar + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SoundVSmell_bar <- SoundVSmell_bar + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SoundVSmell_bar
+
+ggsave("SoundVSmell_pct.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plotting absolute number of visits to the different platforms, SovSm
+```{r}
+SoundVSmell_bar_cnts <- ggplot(data =mSoundVSmell_cnts, aes(x = variable, y = value))
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + geom_boxplot(aes(fill=Species))
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + geom_point(position=position_dodge(width=0.75), aes(group=Species), alpha = 1/4) #makes points semi-transparent
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + xlab("Cues")
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + ylab("Number of visits")
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_x_discrete(labels=c("visits_sound" = "Sound", "visits_smell" = "Smell",
+                              "visits_neither" = "Neither" ))  # Relabelling X axis
+SoundVSmell_bar_cnts <- SoundVSmell_bar_cnts + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SoundVSmell_bar_cnts
+
+ggsave("SoundVSmell_cnts.pdf" , width = 3.05, length = 1.89)
+```
+
+#### Plot first visits, SovSm
+```{r}
+First_visits_SvSm_p <- ggplot(data =first_visits_SvSm_fp, aes(x = Cue, y = Visits, fill = Species ))
+First_visits_SvSm_p <- First_visits_SvSm_p + geom_bar(stat = "identity", position=position_dodge()) # need stat = identity bc just not jsut counting occurances in datasheet
+
+First_visits_SvSm_p  <- First_visits_SvSm_p  + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+First_visits_SvSm_p  <- First_visits_SvSm_p  + scale_x_discrete( labels=c("sound" = "Sound", "smell" = "Smell","neither" = "Neither"))  # Relabelling X axis #rearrange bars
+First_visits_SvSm_p  <- First_visits_SvSm_p  + xlab("Cues")
+First_visits_SvSm_p  <- First_visits_SvSm_p  + ylab("Total visits")
+First_visits_SvSm_p  <- First_visits_SvSm_p  + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+First_visits_SvSm_p
+
+  ggsave("Sound_v_smell_first_visit.pdf" , width = 3.05, length = 1.89)
+ # rm(First_visits_SvSm_p)
+```
+
+
+
 
 
 
