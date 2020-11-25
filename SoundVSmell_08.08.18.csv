@@ -1,0 +1,25 @@
+﻿Bat.ID,Scorer,Date,Time, Species,Test,Rewarded_sound,Rewarded_smell,first_hover,first_land,first_visit,lands_smell,hovers_smell,visits_smell,lands_sound,hovers_sound,visits_sound,lands_neither,hovers_neither,visits_neither,lands_nearest,hovers_nearest,visits_nearest,visits_alpha,visits_beta,visits_feta,visits_epsilon,visits_sassafras,visits_almond,visits_cinnamon,visits_anise,total_lands,total_hovers,total_visits,pct_visits_sound,pct_visits_smell,pct_visits_neither,pct_visits_nearest
+E-C07C,Unknown,4/1/17,20:52,AJ,SovSm,epsilon,sasafrass,smell,NA,"smell, nearest",0,2,2,0,1,1,1,0,1,1,0,1,1,NA,2,1,2,1,1,NA,1,3,4,0.25,0.5,0.25,0.25
+J-C090,Unknown,4/30/17,20:08,AJ,SovSm,feta,cinnamon,"sound, nearest","sound, nearest","sound, nearest",0,1,1,1,5,6,0,0,0,1,5,6,0,NA,6,1,0,NA,1,0,1,6,7,0.857142857,0.142857143,0,0.857142857
+A-Head,Dylan,7/1/17,20:22,L,SovSm,feta,cinnamon,nearest,smell,smell,6,4,10,2,0,2,2,3,5,NA,NA,NA,NA,10,2,5,NA,2,10,5,10,7,17,0.117647059,0.588235294,0.294117647,NA
+B-Butt,Dylan,7/3/17,20:33,L,SovSm,feta,cinnamon,neither,neither,neither,0,0,0,0,0,0,1,1,2,0,0,0,0,NA,0,2,0,NA,0,2,1,1,2,0,0,1,0
+C-Newbie,Dyan,6/30/17,20:35,L,SovSm,feta,cinnamon,sound,sound,sound,1,3,4,3,5,8,2,3,5,2,3,5,5,4,8,NA,8,NA,4,5,6,11,17,0.470588235,0.235294118,0.294117647,0.294117647
+A-C095,?,3/31/17,20:33,AJ,SovSm,epsilon,sasafrass,neither,NA,neither,0,6,6,0,1,1,0,4,4,0,6,6,6,4,NA,1,6,4,NA,1,0,11,11,0.090909091,0.545454545,0.363636364,0.545454545
+Cracker_Jacks,Unknown,5/30/17,NA,T,SovSm,sasafrass,epsilon,sound,NA,sound,0,0,0,0,5,5,0,1,1,0,5,5,0,NA,1,5,0,NA,5,1,0,6,6,0.833333333,0,0.166666667,0.833333333
+Bartameus,Unknown,7/29/17,19:34,L,SovSm,epsilon,sasafrass,"neither, nearest","neither, nearest",neither,1,1,2,0,8,8,5,2,7,5,2,7,8,NA,2,8,2,6,7,NA,6,11,17,0.470588235,0.117647059,0.411764706,0.411764706
+Lireal,Unknown,7/29/17,20:57,L,SovSm,epsilon,sasafrass,"sound, nearest","sound, nearest","sound, nearest",0,5,5,4,14,18,0,5,5,4,14,18,5,5,NA,18,5,5,18,NA,4,24,28,0.642857143,0.178571429,0.178571429,0.642857143
+H-C055,Vanessa,4/30/17,0:31,AJ,SovSm,feta,cinnamon,"sound, nearest","sound, nearest","sound, nearest",0,6,6,2,17,19,0,5,5,2,17,19,5,NA,19,6,19,5,6,NA,2,28,30,0.633333333,0.2,0.166666667,0.633333333
+Shostakovich,Vanessa,9/22/17,20:55,L,SovSm,beta,almond,neither,smell,neither,10,16,26,0,2,2,0,10,10,0,2,2,10,2,NA,26,2,26,10,NA,10,28,38,0.052631579,0.684210526,0.263157895,0.052631579
+Mozart,Vanessa,6/22/17,22:25,L,SovSm,beta,almond,sound,"neither, nearest",sound,0,3,3,0,6,6,10,1,11,10,1,11,NA,6,11,3,11,3,NA,6,10,10,20,0.3,0.15,0.55,0.55
+Beethoven,Dineilys,9/23/17,,L,SovSm,beta,almond,sound,sound,sound,3,0,3,2,4,6,0,0,0,3,0,3,0,6,3,NA,6,3,0,NA,5,4,9,0.666666667,0.333333333,0,0.333333333
+D-C0B6,Vanessa,4/3/17,23:55,AJ,SovSm,epsilon,sasafrass,sound,smell,sound,1,10,11,0,3,3,0,7,7,NA,NA,NA,NA,11,7,3,11,7,3,NA,1,20,21,0.142857143,0.523809524,0.333333333,NA
+F-C0C0,Vanessa,4/5/17,21:02,AJ,SovSm,epsilon,sasafrass,neither,NA,neither,0,1,1,0,2,2,0,3,3,NA,NA,NA,NA,3,1,2,1,2,3,NA,0,6,6,0.333333333,0.166666667,0.5,NA
+I-C0BF,Vanessa,5/1/17,2:59,AJ,SovSm,feta,cinnamon,neither,NA,neither,0,2,2,0,1,1,0,7,7,0,2,2,7,NA,1,2,7,1,2,NA,0,10,10,0.1,0.2,0.7,0.2
+J-C090,Vanessa,4/30/17,20:00,AJ,SovSm,feta,cinnamon,"neither, nearest",NA,"neither, nearest",0,15,15,0,29,29,0,14,14,0,14,14,14,NA,29,15,14,NA,15,29,0,58,58,0.5,0.25862069,0.24137931,0.24137931
+Whitey,Dineilys,10/16/17,20:59,L,SovSm,alpha,anise,"smell, nearest","smell, nearest","smell, nearest",3,8,11,0,2,2,0,1,1,3,8,11,2,NA,1,11,2,1,NA,11,3,11,14,0.142857143,0.785714286,0.071428571,0.785714286
+Handel,Dineilys,10/18/17,19:05,L,SovSm,alpha,anise,NA,sound,sound,0,0,0,1,0,1,0,0,0,0,0,0,1,NA,0,0,0,1,NA,0,1,0,1,1,0,0,0
+K - C091,Amanda,5/2/17 or  4/2/2017,2:08,AJ,SovSm,feta,cinnamon,"smell, nearest",sound,"smell, nearest",1,5,6,3,20,23,0,8,8,1,5,6,9,6,23,NA,NA,9,6,23,4,33,37,0.621621622,0.162162162,0.216216216,0.162162162
+G-C09B,Amanda,4/3/17,NA,AJ,SovSm,feta,cinnamon,neither,NA,neither,0,2,2,0,0,0,0,1,1,0,2,2,1,NA,0,2,NA,1,2,0,0,3,3,0,0.666666667,0.333333333,0.666666667
+B-C09E,Amanda,4/4/17,21:35,AJ,SovSm,epsilon,sasafrass,"smell, nearest",NA,"smell, nearest",0,2,2,0,3,3,0,0,0,0,3,3,2,0,NA,3,2,NA,3,0,0,5,5,0.6,0.4,0,0.6
+C-C09A,May,4/5/17,22:13,AJ,SovSm,epsilon,sasafrass,smell,NA,smell,0,2,2,0,4,4,0,2,2,NA,NA,NA,2,2,NA,4,2,2,4,NA,0,8,8,0.5,0.25,0.25,NA
+L- C07F,Amanda,5/1/17,0:20,AJ,SovSm,feta,cinnamon,"sound, nearest",smell,"sound, nearest",1,4,5,0,15,15,2,3,5,0,15,15,5,NA,15,5,5,15,5,NA,3,22,25,0.6,0.2,0.2,0.6
