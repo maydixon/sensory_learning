@@ -1,0 +1,7 @@
+Species,Test,.y.,n,statistic,df,p,method
+AJ,LocVSmell,visits_counts,9,9.176470588235293,2,0.010170791000516457,Friedman test
+L,LocVSmell,visits_counts,10,16.27027027027027,2,2.930594304733937e-4,Friedman test
+AJ,LocVSound,visits_counts,11,12.761904761904763,2,0.0016935093223266699,Friedman test
+L,LocVSound,visits_counts,9,13.6875,2,0.0010660980266590896,Friedman test
+AJ,SoundVSmell,visits_counts,12,4.136363636363637,2,0.12641541909705237,Friedman test
+L,SoundVSmell,visits_counts,10,0.15789473684210525,2,0.9240885594051769,Friedman test

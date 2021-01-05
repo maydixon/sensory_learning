@@ -1,0 +1,5 @@
+test,p.value,method,alpha
+mult_test_LvSm_AJ,0.013869836915104364,Exact multinomial test,0.05
+LvSm_AJ_binomial_loc,0.008281257938322389,Exact multinomial test,0.0167
+LvSm_AJ_binomial_smell,0.034293552812071325,Exact multinomial test,0.025
+LvSm_AJ_binomial_neither,0.7268709038256354,Exact multinomial test,0.05

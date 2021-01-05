@@ -1,7 +1,7 @@
 ---
 title: "Sensory_learning"
 author: "may"
-date: "July 19, 2018"
+date: "December 22, 2020"
 output: html_document
 ---
 
@@ -10,10 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #Sensory learning
-
-#### Optional To Do's
- 1. Add hovers and lands to first visits and plots
- 2. Add hovers and lands to total visits and plots
 
 ## packages
 ```{r}
@@ -24,7 +20,6 @@ library(reshape2)
 library(dunn.test) #dunn test
 library(FSA) #alternative dunn test
 library(EMT) #exact multinomial test
-library(PMCMRplus) #freidman test post-hocs
 library(boot)
 library(readr)
 library(lme4)
@@ -88,27 +83,26 @@ ncol(LocVSound)
 #remove columns "visits_nearest" "pct_visits_nearest"
 
 # first_choices <- read_csv("~/GitHub/Sensory_learning/Sensory_learning_1/first_response_11.25.20.csv")
-# View(first_choices)
+View(first_choices)
 
-# alt way to get this, from existing data. 
-# select several columns and merge them
-# rewarded 1 and 2 can come from rewarded_loc, etc. 
-# first_hover, first_land_first visit
-
-
-#selecting relevent columns from main data, renaming to standardize (in particular, the nearest columns, making them all "nearest", rather than "next nearest", as for the trials where nearest was possible)
-
-first1<- LocVSound %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_loc, Rewarded_sound, first_hover, first_land, first_visit, first_hover_nearest = first_hover_nextnearest, first_land_nearest = first_land_nextnearest, first_visit_nearest = first_visit_nextnearest) 
+#alt way to get this, from existing data. 
+#select several columns and merge them
+#rewarded 1 and 2 can come from rewarded_loc, etc. 
+#first_hover, first_land_first visit
 
 
+#selecting relevent columns from main data, renaming to standardize
+first1<- LocVSound %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_loc, Rewarded_sound, first_hover, first_land, first_visit, first_hover_nextnearest, first_land_nextnearest, first_visit_nextnearest) %>% rename( first_hover_nearest = first_hover_nextnearest, first_land_nearest =first_land_nextnearest, first_visit_nearest = first_visit_nextnearest) 
 
-first2 <- LocVSmell %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_loc, Rewarded_smell, first_hover, first_land, first_visit, first_hover_nearest = first_hover_nextnearest, first_land_nearest = first_land_nextnearest, first_visit_nearest = first_visit_nextnearest)   
+
+
+first2 <- LocVSmell %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_loc, Rewarded_smell, first_hover, first_land, first_visit, first_hover_nextnearest, first_land_nextnearest, first_visit_nextnearest) %>% rename( first_hover_nearest = first_hover_nextnearest, first_land_nearest =first_land_nextnearest, first_visit_nearest = first_visit_nextnearest)    #may rename  also standardize the nearests for combining
 
 
 first3 <- SoundVSmell %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_sound, Rewarded_smell, first_hover, first_land, first_visit, first_hover_nearest, first_land_nearest, first_visit_nearest)
 
-first_choices <- bind_rows(first1, first2, first3) #
-#View(first_choices)
+first_choices <- bind_rows(first1, first2, first3) 
+View(first_choices)
 
 
 # Remove trachops
@@ -153,6 +147,7 @@ LocVSound_AJ_L$Species<- factor(LocVSound_AJ_L$Species)
 LocVSmell_AJ_L$Species<- factor(LocVSmell_AJ_L$Species)
 SoundVSmell_AJ_L$Species<- factor(SoundVSmell_AJ_L$Species)
 
+View(LocVSound_AJ_L)
 
 ## COLOR PALETTE SETTINGS ##
 
@@ -241,7 +236,7 @@ Avg_pct_visits
 
 ```
 
-## SUMMARIZING AVERAGE NUMBER of of visits overall, per species
+SUMMARIZING AVERAGE NUMBER of of visits overall, per species
 ```{r}
 ### Can also look at the absolute number of times that a given species visits or lands on a platform (total visits)
 ## summary of the mean of the total visits / species mean of the total lands / species, mean of the total hovers/ species
@@ -492,50 +487,49 @@ If it is okay to do this test, the p-value is 0.58, so the two species are quite
 
 ## confidence intervals and bootstrapping
 ```{r}
-# ## confidence intervals for plotting # mark
-# ## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean. (This code doesn't work as far as I know, Nov 2020)
-# ############CODE FROM BASTI#################################################
-# 
-# #X will be the vector of proportions or rates or counts for one treatment in a species. It will calculate 5000 means based on re-sampling your data and then calculate the confidence intervals from that mean-distribution. 
-# 
-# #The function spits out a vector of three values, the lower CI, mean, and upper CI.
-# 
-# #This is the function used for it:
-# #https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot.ci
-# ###########################################################################
-# 
-# #mean function
-# mean.w <- function(x,w) sum(x*w) # calculates a mean
-# 
-# #bootstrapped confidence intervals function
-# boot_ci <- function(x){
-#     mean <- mean(x)
-#     low <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,4]
-#     high <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,5]
-#     c(low,mean,high)} # bootstraps the confidence intervals
-# 
-# 
-# View(mLocVSound)
-# ## get rid of NAs in data using complete.cases
-# #mLocVSound_na<-mLocVSound[complete.cases(mLocVSound[ ,4:6]), ] #removes NA rows in value columns 4:6, this might now make sense if I change the number of columns
-# 
-# mLocVSound_na <- mLocVSound %>% drop_na(value) #dplyr strategy
-# View(mLocVSound_na)
-# 
-# #New database without NAs in the selected columns
-# LocVSound_AJ_L_na <- LocVSound_AJ_L[complete.cases(LocVSound_AJ_L[ ,c("visits_loc", "visits_sound",  "visits_neither", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither")]), ]
-# 
-# #The CI's for loc v Sound, percentages
-# set.seed(1)
-# LvS_pct_CI <- do.call(data.frame, aggregate(value ~ Species + variable , boot_ci, data = mLocVSound_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
-# colnames(LvS_pct_CI) <- c("Species", "variable", "low", "mean", "high")
-# 
-# # The CIs for Loc V Sound, counts
-# LvS_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci(), data = mLocVSound_na))
-# LvS_count_CI
-# 
-# colnames(LvS_count_CI) <- c("Species", "variable", "low", "mean", "high")
-# 
+## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean. (This code doesn't work as far as I know, Nov 2020)
+############CODE FROM BASTI#################################################
+
+#X will be the vector of proportions or rates or counts for one treatment in a species. It will calculate 5000 means based on re-sampling your data and then calculate the confidence intervals from that mean-distribution. 
+
+#The function spits out a vector of three values, the lower CI, mean, and upper CI.
+
+#This is the function used for it:
+#https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot.ci
+###########################################################################
+
+#mean function
+mean.w <- function(x,w) sum(x*w) # calculates a mean
+
+#bootstrapped confidence intervals function
+boot_ci <- function(x){
+    mean <- mean(x)
+    low <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,4]
+    high <- boot.ci(boot(data=x, statistic=mean.w, R=5000, stype="w"), type="basic")$basic[1,5]
+    c(low,mean,high)} # bootstraps the confidence intervals
+
+
+View(mLocVSound)
+## get rid of NAs in data using complete.cases
+#mLocVSound_na<-mLocVSound[complete.cases(mLocVSound[ ,4:6]), ] #removes NA rows in value columns 4:6, this might now make sense if I change the number of columns
+
+mLocVSound_na <- mLocVSound %>% drop_na(value) #dplyr strategy
+View(mLocVSound_na)
+
+#New database without NAs in the selected columns
+LocVSound_AJ_L_na <- LocVSound_AJ_L[complete.cases(LocVSound_AJ_L[ ,c("visits_loc", "visits_sound",  "visits_neither", "pct_visits_loc", "pct_visits_sound", "pct_visits_neither")]), ]
+
+#The CI's for loc v Sound, percentages
+set.seed(1)
+LvS_pct_CI <- do.call(data.frame, aggregate(value ~ Species + variable , boot_ci, data = mLocVSound_na)) #This applies the bootstrap accross species and treatment variables, and do.call puts the data.frame in the right format
+colnames(LvS_pct_CI) <- c("Species", "variable", "low", "mean", "high")
+
+# The CIs for Loc V Sound, counts
+LvS_count_CI <- do.call(data.frame, aggregate(visits_counts ~ Species + variable , boot_ci(), data = mLocVSound_na))
+LvS_count_CI
+
+colnames(LvS_count_CI) <- c("Species", "variable", "low", "mean", "high")
+
 
 ```
 
@@ -546,46 +540,46 @@ If it is okay to do this test, the p-value is 0.58, so the two species are quite
 
 ## plotting confidence intervals for pct and % visits to platforms, LvS 
 ```{r}
-# #LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
-#                               "pct_visits_neither" = "Neither"))  # Relabelling X axis
-# LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
-# LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# 
-# LvS_pct_CI_p                    
-# #ggsave("LvS_pct_CI_p.png" )
-# 
-# #count plot
-# LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
-#                               "pct_visits_neither" = "Neither"))  # Relabelling X axis
-# LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
-# LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
-# LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# LvS_count_CI_p 
-# 
-# #ggsave("LvS_count_CI_p.png" )
+#LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither"))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
+LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+
+LvS_pct_CI_p                    
+#ggsave("LvS_pct_CI_p.png" )
+
+#count plot
+LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
+LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither"))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
+LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+LvS_count_CI_p 
+
+#ggsave("LvS_count_CI_p.png" )
 
 ```
 
@@ -692,23 +686,33 @@ LocVSound_bar_cnts
 
 ##First choices/ visits by species
 
-## Make new data frame with summary level data for first visits  for locVsound
+## Make new data frame with summary data for first visits
 ```{r}
 head(first_choices)
 
-#pull out locvSound trials
 fc_LocVSound<- first_choices[first_choices$Test=="LocVSound",]
 
-#redo factor order, removes extra levels
-fc_LocVSound$first_visit <- factor(fc_LocVSound$first_visit, levels = c("location", "sound", "neither"))  
+#fc_LocVSound<-subset(fc_LocVSound, first_land != "nearest"| is.na(first_land)) # need is.na so doesn't delete NA rows. 
 
-#summarize by species into table
-first_visits_LvS <- as.data.frame(table(fc_LocVSound$first_visit, fc_LocVSound$Species)) 
-#name columns
-names(first_visits_LvS)<- c("Cue", "Species", "Visits")
+head(fc_LocVSound)
 
+
+
+fc_LocVSound$first_visit <- factor(fc_LocVSound$first_visit, levels = c("location", "sound", "neither"))  #redo factor order, removes extra levels
+
+unique(fc_LocVSound$first_visit)
+
+```
+
+
+```{r}
+# This does the same thing, but makes a new dataframe to do it
+#summarize occurances
+first_visits_LvS <- as.data.frame(table(fc_LocVSound$first_visit, fc_LocVSound$Species)) #summarized by species into table
 first_visits_LvS
 
+
+names(first_visits_LvS)<- c("Cue", "Species", "Visits")
 ## For plotting purposes, need to replace 0's with a small number, not meaningful
  first_visits_LvS_fp <- first_visits_LvS #first visits for plot
  first_visits_LvS_fp[first_visits_LvS_fp == 0] <- 0.03 
@@ -741,47 +745,30 @@ Dependent variable: # first visits to 3 platforms, compared to random
 # AJs are in column #2:
 observed_LvS_AJ <- c(first_visits_LvS_wide[first_visits_LvS_wide=="location", 2], first_visits_LvS_wide[first_visits_LvS_wide=="neither", 2], first_visits_LvS_wide[first_visits_LvS_wide=="sound", 2])
 observed_LvS_AJ    #observed number of visits to the three different platforms
-#observed_LvS_AJ <- first_visits_LvS_wide$AJ
-prob <- rep(1/3, 3) #expected number of visits if they are all equal
+
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
 mult_test_LvS_AJ <- multinomial.test(observed_LvS_AJ, prob) #exact multinomial test
-mult_test_LvS_AJ  ##0.05329
+mult_test_LvS_AJ # p = 0.0172  ##0.0533 is that right?
 
 
-#####What kind of posthocs? Do A binomial test, with the treatment in question, and the sum of the other treatments, and then do a Holm correction: dif I use Holm correction, sig. value would be Holm = Target α / (n – rank + 1) 
-# 1st rank = 0.05/ (3-1+1) = 0.0167 
-# 2nd rank = 0.025
-# 3rd rank = 0.05
-# http://www.biostathandbook.com/exactgof.html
-# https://www.statisticshowto.com/holm-bonferroni-method/
+#####What kind of posthocs? Do A binomial test, with the treatment in question, and the sum of the other treatments, and then do a Boneferroni correction: divide the significance level by the number of comparisons. My significance value is: 0.0167
+#http://www.biostathandbook.com/exactgof.html
 observed_LvS_AJ
 
-prob2<- c(1/3, 2/3)
+prob2<- c(.33, .66)
 
 obs_LvS_AJ_loc<-c(8,3)
 obs_LvS_AJ_sound <- c(1, 10)
 obs_LvS_AJ_neither <- c(2, 9)
 
-#Holm: .0125 significance for first rank
-
-# run all post-hocs for AJ LvS, put in list
-LvS_AJ_binomials<-list(
-mult_test_LvS_AJ =mult_test_LvS_AJ,
-LvS_AJ_binomial_loc = multinomial.test(obs_LvS_AJ_loc, prob2) ,
-LvS_AJ_binomial_sound =  multinomial.test(obs_LvS_AJ_sound, prob2) ,
-LvS_AJ_binomial_neither =  multinomial.test(obs_LvS_AJ_neither, prob2)
-) 
+#Boneferroni: .0125 significance for posthocs
+ multinomial.test(obs_LvS_AJ_loc, prob2) # p=0.0039 (significance )
+ multinomial.test(obs_LvS_AJ_sound, prob2) #p = 0.0727
+ multinomial.test(obs_LvS_AJ_neither, prob2) # p = 0.3588
+ #with one bat fewer, less significant, marginal if at all. 
  
-# tidy for outputting: 
-# tidy output of list
-# LvS_AJ_binomial_tidy<- map_dfr(LvS_AJ_binomials, tidy) 
-# # names() pulls out names of list, bind_rows puts all the binomial tests in the list into a dataframe, bind_cols puts those all together
-# LvS_AJ_binomial_tidy <- bind_cols(names(LvS_AJ_binomials),bind_rows(LvS_AJ_binomial_tidy))
-# LvS_AJ_binomial_tidy 
-
-#write_csv(LvS_AJ_binomial_tidy, "Mult test and posthocs - Loc V Sound- AJ.csv")
-
-# Exact multinomial test and posthovs suggest suggests that This is more visits to Location that expected at random
+# Exact multinomial test suggests that This is more visits to Location that expected at random
 
 
  
@@ -798,7 +785,7 @@ So AJs went to Sound more than the other places
 observed_LvS_L <- c(first_visits_LvS_wide[first_visits_LvS_wide=="location", 3], first_visits_LvS_wide[first_visits_LvS_wide=="neither", 3], first_visits_LvS_wide[first_visits_LvS_wide=="sound", 3])
 observed_LvS_L    #observed number of visits to the three different platforms
 
-prob <- rep(1/3, 3) #expected number of visits if they are all equal
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
 mult_test_LvS_L <- multinomial.test(observed_LvS_L, prob) #exact multinomial test
 mult_test_LvS_L # 0.3193
@@ -807,18 +794,16 @@ mult_test_LvS_L # 0.3193
 
 
 
-# prob2<- c(1/3, 2/3)
-# 
-# obs_LvS_L_loc<-c(5,4)
-# obs_LvS_L_sound <- c(1, 8)
-# obs_LvS_L_neither <- c(3, 6)
-# 
-# #Boneferroni: .0125 significance for posthocs
-#  multinomial.test(obs_LvS_L_loc, prob2) # p=0.1709
-#  multinomial.test(obs_LvS_L_sound, prob2) #p = 0.2879
-#  multinomial.test(obs_LvS_L_neither, prob2) # p = 1
+prob2<- c(.33, .66)
 
-#write_csv(tidy(mult_test_LvS_L), "Mult test - Loc V Sound- L.csv")
+obs_LvS_L_loc<-c(5,4)
+obs_LvS_L_sound <- c(1, 8)
+obs_LvS_L_neither <- c(3, 6)
+
+#Boneferroni: .0125 significance for posthocs
+ multinomial.test(obs_LvS_L_loc, prob2) # p=0.1709
+ multinomial.test(obs_LvS_L_sound, prob2) #p = 0.2879
+ multinomial.test(obs_LvS_L_neither, prob2) # p = 0.2731
 
 ```
 
@@ -1275,49 +1260,24 @@ Did the species visit differently?
 observed_LvSm_AJ <- c(first_visits_LvSm_wide[first_visits_LvSm_wide=="location", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="neither", 2], first_visits_LvSm_wide[first_visits_LvSm_wide=="smell", 2])
 observed_LvSm_AJ    #observed number of visits to the three different platforms
 
-prob <- rep(1/3, 3) #expected number of visits if they are all equal
-
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
 mult_test_LvSm_AJ <- multinomial.test(observed_LvSm_AJ, prob) #exact multinomial test
-mult_test_LvSm_AJ #p-value = 0.01387
+mult_test_LvSm_AJ #0.0139
 
 # Exact multinomial test suggests that This is more visits to Location that expected at random
 #posthocs, p=0.0172
 
-prob2<- c(1/3, 2/3)
+prob2<- c(.33, .66)
 
 obs_LvSm_AJ_loc<-c(7,2)
 obs_LvSm_AJ_smell <- c(0,9)
 obs_LvSm_AJ_neither <- c(2,7)
 
-#Holm correction: Holm correction: Target α / (n – rank + 1): 
-# 1st rank = 0.05/ (3-1+1) = 0.0167 
-# 2nd rank = 0.025
-# 3rd rank = 0.05
-Holm_3 <- c(0.05, 0.0167, 0.025, 0.05) #alpha values for full multinomial test and 3 posthoc tests with Holm correction
-
- # run all post-hocs for AJ LvSm, put in list
-LvSm_AJ_binomials<-list(
-  mult_test_LvSm_AJ      = mult_test_LvSm_AJ ,
- LvSm_AJ_binomial_loc    = multinomial.test(obs_LvSm_AJ_loc, prob2) ,
- LvSm_AJ_binomial_smell  = multinomial.test(obs_LvSm_AJ_smell, prob2) ,
-LvSm_AJ_binomial_neither = multinomial.test(obs_LvSm_AJ_neither, prob2)
-)
-
- 
-# tidy for outputting: 
-# LvSm_AJ_binomial_tidy<- map_dfr(LvSm_AJ_binomials, tidy) 
-# 
-# # names() pulls out names of list, bind_rows puts all the binomial tests in the list into a dataframe, bind_cols puts those all together
-# LvSm_AJ_binomial_tidy <- bind_cols(names(LvSm_AJ_binomials),bind_rows(LvSm_AJ_binomial_tidy))
-# 
-# #add column with holm adjusted alpha values
-# LvSm_AJ_binomial_tidy <- bind_cols(LvSm_AJ_binomial_tidy, Holm_3)
-# 
-# #name columns
-# colnames(LvSm_AJ_binomial_tidy) <- c("test", "p.value", "method", "alpha")
-# LvSm_AJ_binomial_tidy
-# #write output
-# ##write_csv(LvSm_AJ_binomial_tidy, "Mult test and posthocs - Loc V Smell- AJ.csv")
+#Boneferroni: .0125 significance for posthocs
+ multinomial.test(obs_LvSm_AJ_loc, prob2) # p=0.0.0083
+ multinomial.test(obs_LvSm_AJ_smell, prob2) #p = 0.0343
+ multinomial.test(obs_LvSm_AJ_neither, prob2) # p = 0.7269
 
  
 ```
@@ -1325,7 +1285,7 @@ So AJs went to location more than the other places
 
 # first visits, exact multinomial test: Lophos
 ```{r}
-
+## MUST CHANGE THESE NUMBERS MANUALLY ##
 # Did the Lophos  visit the three platforms equally?
 # Use exact multinomial test: categorical data, small sample sizes
 
@@ -1334,48 +1294,34 @@ So AJs went to location more than the other places
 observed_LvSm_L <- c(first_visits_LvSm_wide[first_visits_LvSm_wide=="location", 3], first_visits_LvSm_wide[first_visits_LvSm_wide=="neither", 3], first_visits_LvSm_wide[first_visits_LvSm_wide=="smell", 3])
 observed_LvSm_L    #observed number of visits to the three different platforms
 
-prob <- rep(1/3, 3) #expected proportion of visits if they are all equal
-
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
+prob 
 mult_test_LvSm_L <- multinomial.test(observed_LvSm_L, prob) #exact multinomial test
-mult_test_LvSm_L #p = 0.005639
+mult_test_LvSm_L #0.0056
 
 # Exact multinomial test suggests that This is more visits to Location that expected at random
-
+# mark
 #posthocs
-## MUST CHANGE THESE NUMBERS MANUALLY ##
+# I think I made an error on these before: n=9, not 11
+obs_LvSm_L_loc<-c(8,1)
+obs_LvSm_L_smell <- c(0,9)
+obs_LvSm_L_neither <- c(1,8)
 
-# # of bats that flew to feeder first, # of bats that did not
+#Now showing n=10? Where did bat come from? check which is right: 
 obs_LvSm_L_loc<-c(8,2)
-obs_LvSm_L_smell <- c(0,10)
+obs_LvSm_L_smell <- c(0,9)
 obs_LvSm_L_neither <- c(2,8)
 
-#Binomial posthocs with Holm corrections: .0125 significance for first rank
-LvSm_L_binomials<-list(
-  mult_test_LvSm_L        = mult_test_LvSm_L ,
-  LvSm_L_binomial_loc     = multinomial.test(obs_LvSm_L_loc, prob2) ,
-  LvSm_L_binomial_smell   = multinomial.test(obs_LvSm_L_smell, prob2) ,
-  LvSm_L_binomial_neither = multinomial.test(obs_LvSm_L_neither, prob2) 
-)
 
- 
-# # tidy for outputting: 
-# LvSm_L_binomial_tidy<- map_dfr(LvSm_L_binomials, tidy) 
-# 
-# # names() pulls out names of list, bind_rows puts all the binomial tests in the list into a dataframe, bind_cols puts those all together
-# LvSm_L_binomial_tidy <- bind_cols(names(LvSm_L_binomials),bind_rows(LvSm_L_binomial_tidy))
-# 
-# #add column with holm adjusted alpha values
-# LvSm_L_binomial_tidy <- bind_cols(LvSm_L_binomial_tidy, Holm_3)
-# 
-# #name columns
-# colnames(LvSm_L_binomial_tidy) <- c("test", "p.value", "method", "alpha" )
-# LvSm_L_binomial_tidy
-# #write output
-# #write_csv(LvSm_L_binomial_tidy, "Mult test and posthocs - Loc V Smell- L.csv")
+#Boneferroni: .0125 significance for posthocs
+ multinomial.test(obs_LvSm_L_loc, prob2) # p=0.001
+ multinomial.test(obs_LvSm_L_smell, prob2) #p = 0.0343 #not quite signif with correction
+ multinomial.test(obs_LvSm_L_neither, prob2) # p = 0.2879
+
 
 ```
-Can reject null hypothesis that Lophostoma went to the 3 cues first equally- went to location more
-
+Can reject null hypothesis that Lophostoma went to the 3 cues first equally
+p=  0.0139
 
 #### Plot first visits
 ```{r}
@@ -1719,45 +1665,45 @@ Anova(anova_SovSm, type = 3)
 
 ## plotting confidence intervals for pct and % visits to platforms 
 ```{r}
-# #SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_pct_CI_p                    
-# #ggsave("SovSm_pct_CI_p.png" )
-# 
-# #count plot
-# SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
-# SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
-# SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_count_CI_p   
-# 
-# #ggsave("SovSm_count_CI_p.png")
+#SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
+SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_pct_CI_p                    
+#ggsave("SovSm_pct_CI_p.png" )
+
+#count plot
+SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
+SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_count_CI_p   
+
+#ggsave("SovSm_count_CI_p.png")
 
 ```
 #check out nearest. Is there a weird value?
@@ -1830,7 +1776,7 @@ names(first_visits_SvSm)<- c("Cue", "Species", "Visits")
  
  
 first_visits_SvSm_wide <- dcast(first_visits_SvSm, Cue~Species ) #reshapes into wide format
-first_visits_SvSm_wide
+head(first_visits_SvSm_wide)
 
 
 ```
@@ -1849,15 +1795,12 @@ Did the species visit differently?
 observed_SvSm_AJ <- c(first_visits_SvSm_wide[first_visits_SvSm_wide=="sound", 2], first_visits_SvSm_wide[first_visits_SvSm_wide=="smell", 2], first_visits_SvSm_wide[first_visits_SvSm_wide=="neither", 2])
 observed_SvSm_AJ    #observed number of visits to the three different platforms
 
-prob <- rep(1/3, 3) #expected number of visits if they are all equal
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
 prob 
 mult_test_SvSm_AJ <- multinomial.test(observed_SvSm_AJ, prob) #exact multinomial test
-mult_test_SvSm_AJ # p-value = 1
+mult_test_SvSm_AJ
 
-#write_csv(tidy(mult_test_SvSm_AJ), "Mult test _ Sound V Smell- AJ.csv")
-
-# Exact multinomial test suggests that these are not different than random 
-# no post-hoc tests necessary
+# Exact multinomial test suggests that these are not different than random
 
 
  
@@ -1874,20 +1817,18 @@ So no difference bt choices
 observed_SvSm_L <- c(first_visits_SvSm_wide[first_visits_SvSm_wide=="sound", 3], first_visits_SvSm_wide[first_visits_SvSm_wide=="smell", 3], first_visits_SvSm_wide[first_visits_SvSm_wide=="neither", 3])
 observed_SvSm_L    #observed number of visits to the three different platforms
 
-prob <- rep(1/3, 3) #expected number of visits if they are all equal
+prob <- rep(0.33, 3) #expected number of visits if they are all equal
  
 mult_test_SvSm_L <- multinomial.test(observed_SvSm_L, prob) #exact multinomial test
-mult_test_SvSm_L # p-value = 0.6266
+mult_test_SvSm_L
 
-
-#write_csv(tidy(mult_test_SvSm_L), "Mult test _ Sound V Smell- L.csv")
 # Exact multinomial test suggests that these are not different than random
-# no post-hoc tests necessary
+
 
 
 ```
 Can NOT reject null hypothesis that Lophostoma went to the 3 cues first equally
-p=  0.6266
+p=  0.0139
 
 #### Plot first visits
 ```{r}
@@ -1913,7 +1854,7 @@ First_visits_SvSm_p
 
 #First combining the melted datasets
 
-# Putting dataset all together, long
+# Putting dataset all together
 ```{r}
 mLocVSound$Test <- "LocVSound"
 mLocVSmell$Test <- "LocVSmell"
@@ -1939,19 +1880,14 @@ m_Alltests <- m_Alltests %>% rename(visits_prop =value, cue =variable)
 str(m_Alltests)
 ```
 
-## Version of long data, m_Alltests, with no "NA"s
-```{r}
-m_Alltests1 <- drop_na(m_Alltests)
-```
-
 ## Data split by Test
 ```{r}
-SvSm <- m_Alltests1 %>% filter(Test == "SoundVSmell") 
-LvSm <- m_Alltests1 %>% filter(Test == "LocVSmell") 
-LvSo <- m_Alltests1 %>% filter(Test == "LocVSound") 
+SvSm <- m_Alltests %>% filter(Test == "SoundVSmell") 
+LvSm <- m_Alltests %>% filter(Test == "LocVSmell") 
+LvSo <- m_Alltests %>% filter(Test == "LocVSound") 
 ```
 
-## Data split by Test and Species (in case I want it, don't think I need it)
+## Data split by Test and Species (in case I want it)
 ```{r}
 #repeat J in SvSm_AJ
 SvSm_AJ <- SvSm %>% filter(Species == "AJ") %>% droplevels() #used droplevels to get rid of unused lopho levels. Friedman test won't run without this bc it thinks it's not an unreplicated block design
@@ -1961,101 +1897,26 @@ LvSm_AJ <- LvSm %>% filter(Species == "AJ") %>% droplevels() #A-L
 LvSm_L <- LvSm %>% filter(Species == "L") %>% droplevels()
 LvSo_AJ <- LvSo %>% filter(Species == "AJ") %>% droplevels()
 LvSo_L <- LvSo %>% filter(Species == "L") %>% droplevels()
-
-splitTestSp<- list(SvSm_L, LvSm_AJ, LvSm_L, LvSo_AJ, LvSo_L)
 ```
-
 
 
 ## Using Friedman tests and posthocs to compare whether bats of each species went to groups differently
 - Friedman tests are more appropriate than Kruskal- Wallace tests bc I have bat ID as a blocking factor. (groups aren't independent). # vists (data) is explained by cue (groups), and blocks (bats)
-- Quade tests may possibly be more powerful when # groups (k, "cue" here, <5). Right now haven't run.(quade tests aren't pipe friendly rn) See: https://cran.r-project.org/web/packages/PMCMR/vignettes/PMCMR.pdf
 ```{r}
-#run Friedman test for all groups at the same time: 
 
-#use version of m_alltests with no NAs: m_Alltests1
+#could I do it for all subsets at the same time? sure can: 
 
+#make version of m_alltests with no NAs:
+m_Alltests1 <- drop_na(m_Alltests)
 
 #run friedman test, grouping by species and test, using droplevels to get rid of unused factor levels in each subset, and running friedman test on each subset. yay:
 friedman_all <- m_Alltests1 %>% group_by(Test, Species) %>% droplevels() %>% 
-friedman_test(visits_counts ~ cue | Bat.ID) # format (y ~ groups | blocks)
+friedman_test(visits_prop ~ cue | Bat.ID)
 friedman_all
+  
+#write_csv(friedman_all, "friedman_tests.csv")
 
-
-
-##write_csv(friedman_all, "friedman_tests.csv")
-```
-
-
-##Friedman test post-hocs - Nemenyi tests
-- Nemenyi's All-Pairs Comparisons Test
-- rn, both lvSo and LvSm treatments were significant, so post-hocs on them
-```{r}
-#Post hocs for Friedman test?: Nemenyi or Conover tests (see: https://cran.r-project.org/web/packages/PMCMR/vignettes/PMCMR.pdf). Choosing Nemenyi bc more conservative/was the first one I came across. 
-
-#splitTestSp
-
-#trying to figure out how to run all Nemenyi tests together (not pipe friendly), works ok, but hard to figure out what each one refers to, bc no names, will fix later!: 
-NM <- lapply(splitTestSp, function(df) {
-   NM1<- frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID, data =df)
-    NM1
-})
-
-#in the meantime, doing it row by row. 
-#uses PMCMR package- doesn't play well with dplyr for some reason. 
-Nemenyi_LvSm_AJ <- frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID, data = LvSm_AJ) # format (y ~ groups | blocks)
-Nemenyi_LvSm_L <- frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID, data = LvSm_L) # format (y ~ groups | blocks)
-Nemenyi_LvSo_AJ <- frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID, data = LvSo_AJ) # format (y ~ groups | blocks)
-Nemenyi_LvSo_L <- frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID, data = LvSo_L) # format (y ~ groups | blocks)
-
-
-
-Nemenyi_LvSm_AJ
-Nemenyi_LvSm_L
-Nemenyi_LvSo_AJ
-Nemenyi_LvSo_L
-
-#list these 
-NemenyiList <- list(Nemenyi_LvSm_AJ = Nemenyi_LvSm_AJ, Nemenyi_LvSm_L =Nemenyi_LvSm_L, Nemenyi_LvSo_AJ = Nemenyi_LvSo_AJ, Nemenyi_LvSo_L = Nemenyi_LvSo_L)
-NemenyiList
-
-#summaries
- Summary_Nemenyi<- lapply(NemenyiList, summary )
- Summary_Nemenyi
-
-# valuedataframes from each dataset in list, put into new list
-Nemenyi_p.vals<- lapply(NemenyiList, function(x) x$p.value)
-
-#write these to csv.s (would be nice one below another in the same CSV, but beggars/choosers)
-#mapply(write.csv, Nemenyi_p.vals, file=paste0(names(Nemenyi_p.vals), '.csv'))
-
-
-#############copy pasta#######################
-##apply
-
-
-# lapply(NemenyiList, frdAllPairsNemenyiTest(visits_counts ~ cue | Bat.ID)) #can't find the right object
-
-
-#Could make this into a tidyer dataframe (no tidy for these objects)
-#pull out p.values, melt to long, 
-#pull out statistic, melt to long
-#add object name 
-
-# Nemenyi_LvSm_AJ$model
-# nemen.df <- left_join(
-# melt(Nemenyi_LvSm_AJ$p.value, value.name = "p.value"),
-# melt(Nemenyi_LvSm_AJ$statistic, value.name = "statistic") 
-
-################################################
-```
-
-
-
-## Spare Freidman test code
-```{r}
-
-####spare code######
+####copy pasta######
 # #Other ways to code this (with differently subsetting data. Nice to do all together, as above)
 # #one way to code (with subsetted data)
 # fried_SvSm_AJ <- friedman.test(visits_counts ~ cue | Bat.ID, data = SvSm_AJ) #na.action =  na.omit fried_SvSm_AJ 
@@ -2113,103 +1974,19 @@ summary(fit)
 rootogram(fit) #seems like my data re pretty off an idea fit 
 
 
-##  negative binomial model any better? 
+#negative binomial model any better? 
 glmm.nb_bytest<- lapply(split(m_Alltests1,m_Alltests1$Test),
-       glmer.nb,formula=visits_counts ~ cue*Species + (1|Bat.ID))
+       glmer.nb,formula=visits_counts ~ cue*Species + (1|Bat.ID), family = "poisson")
 glmm.nb_bytest
-# deviance/ df.resid  = 7.08, 6.23, 6.03 respectively (still severe overdispersion?)
-# a little better, but not a ton? Test formally:
+# deviance/ df.resid  = 7.08
+# a little better, but not a ton? 
 
+summary(glmm_bytest$LocVSmell)
+summary(glmm.nb_bytest$LocVSmell)
 
-##  Zero- inflated:
-glmm.p.zi.bytest<- lapply(split(m_Alltests1,m_Alltests1$Test),
-       glmmTMB,formula=visits_counts ~ cue*Species + (1|Bat.ID), ziformula = ~1 , family = "poisson")
-glmm.p.zi.bytest
-
-# just have to update glmmTMM
-fittedModel <- glmmTMB(observedResponse ~ Environment1 + I(Environment1^2) + (1|group), ziformula = ~1 , family = "poisson", data = testData)
-summary(fittedModel)
-
-# Zero inflated negative binomial
-
-
-
-glmm.nb_bytest<- lapply(split(m_Alltests1,m_Alltests1$Test),
-       glmer.nb,formula=visits_counts ~ cue*Species + (1|Bat.ID))
-glmm.nb_bytest
-
-
-## libraries that check for overdispersion
 library(RVAideMemoire)
-library(AER)
-library(DHARMa)
-citation("DHARMa")
-
-## going through the DHARMa workflow: 
-https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html
-
-#model objects
-g.p.LVSm <- glmm_bytest$LocVSmell #poisson
-g.nb.LVSm<- glmm.nb_bytest$LocVSmell #negative binomial
-
-#simulation of residuals
-simulationOutput.p <- simulateResiduals(fittedModel = g.p.LVSm)
-plot(simulationOutput.p) 
-simulationOutput.p #significant fit issues- seemingly overdispersed
-
-simulationOutput.nb <- simulateResiduals(fittedModel = g.nb.LVSm)
-plot(simulationOutput.nb) 
-simulationOutput.nb #no significant fit issues
-
-#targeted overdispersion tests
-
-#Test 1 - A non-parametric test on the simulated residuals
-disp.test.1.p<-testDispersion(simulationOutput.p)
-disp.test.1.p #NS
-
-disp.test.1.nb<-testDispersion(simulationOutput.nb)
-disp.test.1.nb #p=0.088 , slightly significant. 
-
-
-#Test 2 - A non-parametric overdispersion test on the re-fitted residuals.
-
-simulationOutput.p2 <- simulateResiduals(fittedModel = g.p.LVSm, refit = T, n = 20)
-disp.test.2.p <- testDispersion(simulationOutput.p2)
-disp.test.2.p  #low p.value: 2.2*E-16
-
-simulationOutput.nb2 <- simulateResiduals(fittedModel = g.nb.LVSm, refit = T, n = 20)
-disp.test.2.nb <-testDispersion(simulationOutput.nb2)
-disp.test.2.nb #p=0.5
-
-# I don't know why these don't seem to agree. 
-
-
-# Test for Zero-inflation 
-zeroinflate.p<- testZeroInflation(simulationOutput.p)
-zeroinflate.nb<- testZeroInflation(simulationOutput.nb)
-zeroinflate.p
-zeroinflate.nb
-
-## Model as Zero inflated?
-library(glmmTMB)
-
-#sample code
-
-
-dispersiontest(glmm_bytest$LocVSmell)
-testDispersion(glmm_bytest$LocVSmell)
-
-
-
-
-
-#write these to csv.s (would be nice one below another in the same CSV, but beggars/choosers)
-#mapply(write.csv, Nemenyi_p.vals, file=paste0(names(Nemenyi_p.vals), '.csv'))
-
-
-disperseion_locvSmell<- overdisp.glmer(glmm_bytest$LocVSmell)
+overdisp.glmer(glmm_bytest$SoundVSmell)
 overdisp.glmer(glmm.nb_bytest$SoundVSmell)
-
 #ya, the negative binomial is pretty solid. (1.15 ratio resid deviance on df)
 
 summary(glmm_bytest$SoundVSmell)
@@ -2254,7 +2031,6 @@ dispersiontest(LvSo_glm)
 ```
 
 
-# Exploratory plots showing individual variation
 ```{r}
 ########
 #plotting the two species, # of counts to each cue:
@@ -2263,7 +2039,6 @@ hist_AJ_Lopho_counts <- ggplot(m_Alltests, aes(visits_counts, fill = Species)) +
   facet_grid(cols= vars (Species), margins=TRUE, scales="free_y", rows=vars(Test))
 
 hist_AJ_Lopho_counts 
-# ggsave("hist_AJ_Lopho_count_visits.jpg")
 #pretty similar in overall number of visits, but Lophos have more variance
 
 ################
@@ -2274,8 +2049,6 @@ hist_AJ_Lopho_prop  <- ggplot(m_Alltests, aes(visits_prop, fill = Species)) +
  # scale_x_log10() +
   facet_grid(cols= vars (Species), margins=TRUE, scales="free_y", rows=vars(Test))
 hist_AJ_Lopho_prop 
-# ggsave("hist_AJ_Lopho_prop_visits.jpg")
-
 #just a really weird distribution
 
 #################
@@ -2293,7 +2066,7 @@ prop_individual_bat_choices_bar
 counts_individual_bat_choices_bar <- ggplot(data = m_Alltests, aes(x= Bat.ID, y= visits_counts, fill =cue))+
 geom_bar(position="stack", stat="identity") +
 theme(axis.text.x = element_text(angle = 90, size = 5)) +
-facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free")
+facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free_x")
 counts_individual_bat_choices_bar
 #ggsave("count_individual_bat_choices_bar.jpg")
 #ggsave("count_individual_bat_choices_bar.pdf")
@@ -2423,6 +2196,9 @@ SvSm_glmm <- m_Alltests %>% group_by(Test) %>% do(tidy(glmer(.$visits_counts ~ .
 #not tidy
 
 
+result <- by(data, data$Product_type, 
+    function(x) t.test(x$Price_Online, x$Price_offline, mu=0, alt="two.sided", paired = TRUE, conf.level = 0.99))
+
 test<- data %>% 
   group_by(factor_var) %>% 
   do(as.data.frame(weighted.sd(x=.$index_var,weight=.$weight_var)))
@@ -2458,46 +2234,46 @@ width = zz<-  3.5
 
 ## plotting confidence intervals for pct and % visits to platforms, LvS 
 ```{r}
-# #LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
-# LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# 
-# LvS_pct_CI_p                    
-# #ggsave("LvS_pct_CI_p.pdf"  )
-# 
-# #count plot
-# LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
-# LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
-# LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# LvS_count_CI_p 
-# 
-# #ggsave("LvS_count_CI_p.pdf"  )
+#LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_pct_CI_p <- LvS_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
+LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+
+LvS_pct_CI_p                    
+#ggsave("LvS_pct_CI_p.pdf"  )
+
+#count plot
+LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
+LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_count_CI_p <- LvS_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
+LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+LvS_count_CI_p 
+
+#ggsave("LvS_count_CI_p.pdf"  )
 
 ```
 #### Plotting % of visits to the different platforms, LvS
@@ -2562,46 +2338,46 @@ First_visits_LvS_p
 
 ## plotting confidence intervals for pct and % visits to platforms , LvSm
 ```{r}
-# #LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# LvSm_pct_CI_p                    
-# 
-# #ggsave("LvSm_pct_CI_p.pdf"  )
-# 
-# #count plot
-# LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
-# LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# LvSm_count_CI_p <- LvSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
-# LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
-# LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# LvSm_count_CI_p 
-# 
-# #ggsave("LvSm_count_CI_p.pdf"  )
+#LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_pct_CI_p <- LvSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_pct_CI_p                    
+
+#ggsave("LvSm_pct_CI_p.pdf"  )
+
+#count plot
+LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_count_CI_p <- LvSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
+LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_count_CI_p 
+
+#ggsave("LvSm_count_CI_p.pdf"  )
 ```
 
 #### Plotting % of visits to the different platforms, LvSm
@@ -2661,45 +2437,45 @@ First_visits_LvSm_p
 
 ## plotting confidence intervals for pct and % visits to platforms 
 ```{r}
-# #SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_pct_CI_p                    
-# #ggsave("SovSm_pct_CI_p.pdf"  )
-# 
-# #count plot
-# SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
-# SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
-# SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_count_CI_p   
-# 
-# #ggsave("SovSm_count_CI_p.pdf"  )
+#SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_pct_CI_p <- SovSm_pct_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
+SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_pct_CI_p                    
+#ggsave("SovSm_pct_CI_p.pdf"  )
+
+#count plot
+SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_count_CI_p <- SovSm_count_CI_p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete(labels=c("pct_visits_sound" = "Sound", "pct_visits_smell" = "Smell",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
+SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_count_CI_p   
+
+#ggsave("SovSm_count_CI_p.pdf"  )
 
 ```
 
@@ -2783,46 +2559,46 @@ First_visits_SvSm_p
 
 ## plotting confidence intervals for pct and % visits to platforms, LvS 
 ```{r}
-# #LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_pct_CI_p <- LvS_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
-#                               "pct_visits_neither" = "Neither" ))  # Relabelling X axis
-# LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
-# LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
-# LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# 
-# LvS_pct_CI_p                    
-# #ggsave("LvS_pct_CI_p.jpg", width = zz  )
-# 
-# #count plot
-# LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
-# LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvS_count_CI_p <- LvS_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "L+S-", "pct_visits_sound" = "L-S+",
-#                               "pct_visits_neither" = "L-S-"  ))  # Relabelling X axis
-# LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
-# LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
-# LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# 
-# LvS_count_CI_p 
-# 
-# #ggsave("LvS_count_CI_p.jpg", width = zz  )
+#LvS_pct_CI$Species <- factor(LvS_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvS_count_CI$Species <- factor(LvS_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvS_pct_CI_p <- ggplot(data = LvS_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_pct_CI_p <- LvS_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_pct_CI_p <- LvS_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "Location", "pct_visits_sound" = "Sound",
+                              "pct_visits_neither" = "Neither" ))  # Relabelling X axis
+LvS_pct_CI_p <- LvS_pct_CI_p + xlab("Cues")
+LvS_pct_CI_p <- LvS_pct_CI_p + ylab("Mean proportion of visits")
+LvS_pct_CI_p <- LvS_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+
+LvS_pct_CI_p                    
+#ggsave("LvS_pct_CI_p.jpg", width = zz  )
+
+#count plot
+LvS_count_CI_p <- ggplot(data = LvS_count_CI, aes(x=variable, y = mean, colour = Species))
+LvS_count_CI_p <- LvS_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvS_count_CI_p <- LvS_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvS_count_CI_p <- LvS_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvS_count_CI_p <- LvS_count_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = "L+S-", "pct_visits_sound" = "L-S+",
+                              "pct_visits_neither" = "L-S-"  ))  # Relabelling X axis
+LvS_count_CI_p <- LvS_count_CI_p + xlab("Cues")
+LvS_count_CI_p <- LvS_count_CI_p + ylab("Mean number of visits")
+LvS_count_CI_p <- LvS_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+
+LvS_count_CI_p 
+
+#ggsave("LvS_count_CI_p.jpg", width = zz  )
 
 ```
 #### Plotting % of visits to the different platforms, LvS
@@ -2846,7 +2622,8 @@ LocVSound_bar <- LocVSound_bar + scale_x_discrete(labels=c("pct_visits_loc" = ex
 LocVSound_bar <- LocVSound_bar + scale_fill_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
 LocVSound_bar
 
- #ggsave("LocVSound_nolegend_pcts1.jpg", width = zz , height = hh)
+# ggsave("LocVSound_nolegend_pcts1.jpg", width = zz , height = hh)
+
 ```
 
 
@@ -2889,46 +2666,46 @@ First_visits_LvS_p
 
 ## plotting confidence intervals for pct and % visits to platforms , LvSm
 ```{r}
-# #LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# # labelling the X axis, using L+O- system
-# # labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) )
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# LvSm_pct_CI_p <- LvSm_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) ))  # Relabelling X axis
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
-# LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# LvSm_pct_CI_p                    
-# 
-# #ggsave("LvSm_pct_CI_p.jpg", width = zz, height = hh  )
-# 
-# #count plot
-# LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
-# LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# #LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# LvSm_count_CI_p <- LvSm_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c(labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) )))  # Relabelling X axis
-# LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
-# LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
-# LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# LvSm_count_CI_p 
-# 
-# #ggsave("LvSm_count_CI_p.jpg", width = zz  )
+#LvSm_pct_CI$Species <- factor(LvSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#LvSm_count_CI$Species <- factor(LvSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+# labelling the X axis, using L+O- system
+# labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) )
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+LvSm_pct_CI_p <- ggplot(data = LvSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_pct_CI_p <- LvSm_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_x_discrete(labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) ))  # Relabelling X axis
+LvSm_pct_CI_p <- LvSm_pct_CI_p + xlab("Cues")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + ylab("Mean proportion of visits")
+LvSm_pct_CI_p <- LvSm_pct_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_pct_CI_p                    
+
+#ggsave("LvSm_pct_CI_p.jpg", width = zz, height = hh  )
+
+#count plot
+LvSm_count_CI_p <- ggplot(data = LvSm_count_CI, aes(x=variable, y = mean, colour = Species))
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+LvSm_count_CI_p <- LvSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+#LvSm_count_CI_p <- LvSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+LvSm_count_CI_p <- LvSm_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_x_discrete(labels=c(labels=c("pct_visits_loc" = expression(paste( L^"+"~O^"-")), "pct_visits_smell" = expression(paste( L^"-"~O^"+")), "pct_visits_neither" = expression(paste( L^"-"~O^"-")) )))  # Relabelling X axis
+LvSm_count_CI_p <- LvSm_count_CI_p + xlab("Cues")
+LvSm_count_CI_p <- LvSm_count_CI_p + ylab("Mean number of visits")
+LvSm_count_CI_p <- LvSm_count_CI_p + scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+LvSm_count_CI_p 
+
+#ggsave("LvSm_count_CI_p.jpg", width = zz  )
 ```
 
 #### Plotting % of visits to the different platforms, LvSm
@@ -2986,42 +2763,42 @@ First_visits_LvSm_p
 
 ## plotting confidence intervals for pct and % visits to platforms 
 ```{r}
-# #SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
-# 
-# #SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
-# 
-# pd = position_dodge(0.5) # move bars .05 to the left and right
-# 
-# #proportion plot
-# SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete( labels=c("pct_visits_sound" = expression(paste( S^"+"~O^"-")), "pct_visits_smell" = expression(paste(S^"-"~O^"+")), "pct_visits_neither" = expression(paste( S^"-"~O^"-")) ))  # Relabelling X axis
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
-# SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_pct_CI_p                    
-# #ggsave("SovSm_pct_CI_p.jpg", width = zz  )
-# 
-# #count plot
-# SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
-# SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
-# SovSm_count_CI_p <- SovSm_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-# panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
-# 
-# SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete( labels=c("pct_visits_sound" = expression(paste( S^"+"~O^"-")), "pct_visits_smell" = expression(paste( S^"-"~O^"+")), "pct_visits_neither" = expression(paste( S^"-"~O^"-")) ))  # Relabelling X axis
-# SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
-# SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
-# SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
-# SovSm_count_CI_p   
-# 
-# #ggsave("SovSm_count_CI_p.jpg", width = zz  )
+#SovSm_pct_CI$Species <- factor(SovSm_pct_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum")) #need to do this for plot legends to say full name
+
+#SovSm_count_CI$Species <- factor(SovSm_count_CI$Species, levels=c("AJ", "L"), labels = c("A. jamaicensis", "L. silvicolum"))
+
+pd = position_dodge(0.5) # move bars .05 to the left and right
+
+#proportion plot
+SovSm_pct_CI_p <- ggplot(data = SovSm_pct_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_pct_CI_p <- SovSm_pct_CI_p + scale_x_discrete( labels=c("pct_visits_sound" = expression(paste( S^"+"~O^"-")), "pct_visits_smell" = expression(paste(S^"-"~O^"+")), "pct_visits_neither" = expression(paste( S^"-"~O^"-")) ))  # Relabelling X axis
+SovSm_pct_CI_p <- SovSm_pct_CI_p + xlab("Cues")
+SovSm_pct_CI_p <- SovSm_pct_CI_p + ylab("Mean proportion of visits")
+SovSm_pct_CI_p <- SovSm_pct_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_pct_CI_p                    
+#ggsave("SovSm_pct_CI_p.jpg", width = zz  )
+
+#count plot
+SovSm_count_CI_p <- ggplot(data = SovSm_count_CI, aes(x=variable, y = mean, colour = Species))
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_errorbar(aes(ymin = low, ymax = high), width =.1, position = pd)
+SovSm_count_CI_p <- SovSm_count_CI_p + geom_point( position = pd, shape=18, size = 3)
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_fill_discrete(name="My new legend", labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum")) 
+SovSm_count_CI_p <- SovSm_count_CI_p +  theme( legend.position="none",panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.text = element_text(colour = "black"), legend.text = element_text(face = "italic"))  #gets rid of background, makes legend italic
+
+SovSm_count_CI_p <- SovSm_count_CI_p + scale_x_discrete( labels=c("pct_visits_sound" = expression(paste( S^"+"~O^"-")), "pct_visits_smell" = expression(paste( S^"-"~O^"+")), "pct_visits_neither" = expression(paste( S^"-"~O^"-")) ))  # Relabelling X axis
+SovSm_count_CI_p <- SovSm_count_CI_p + xlab("Cues")
+SovSm_count_CI_p <- SovSm_count_CI_p + ylab("Mean proportion of visits")
+SovSm_count_CI_p <- SovSm_count_CI_p +  scale_color_manual(values = c(Lo, Art), labels = c("AJ" = "A. jamaicensis", "L" = "L. silvicolum"))
+SovSm_count_CI_p   
+
+#ggsave("SovSm_count_CI_p.jpg", width = zz  )
 
 ```
 

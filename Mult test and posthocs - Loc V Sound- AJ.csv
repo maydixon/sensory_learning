@@ -1,0 +1,5 @@
+...1,p.value,method
+mult_test_LvS_AJ,0.053294721,Exact multinomial test
+LvS_AJ_binomial_loc,0.008823181,Exact multinomial test
+LvS_AJ_binomial_sound,0.113775565,Exact multinomial test
+LvS_AJ_binomial_neither,0.356195702,Exact multinomial test
