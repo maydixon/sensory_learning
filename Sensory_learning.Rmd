@@ -32,13 +32,20 @@ library(emmeans)
 library(fitdistrplus)
 library(ggpubr)
 library(rstatix)
+library(cowplot)
 
 ```
 
 ```{r}
-## TO DO: 
+## COLOR PALETTE SETTINGS ##
 
-## Finalize methods for comparing between the two species. 
+Lo <-   "#468902" # A blue color,
+Art <-"#133954"   # A green color
+Mypal <- c(Lo, Art)
+loc <- "#c9caa8" #light green
+odr<- "#f2cf43" #yellow
+snd<- "#684e44" #brown purple
+nthr<- "#cc935E" #terra cotta
 
 ```
 
@@ -107,27 +114,90 @@ first2 <- LocVSmell %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Reward
 
 first3 <- SoundVSmell %>% select(Bat.ID, Scorer, Date, Time, Species, Test, Rewarded_sound, Rewarded_smell, first_hover, first_land, first_visit, first_hover_nearest, first_land_nearest, first_visit_nearest)
 
-first_choices <- bind_rows(first1, first2, first3) #
+first_choices <- bind_rows(first1, first2, first3) 
+# %>%
+#   mutate(Test= case_when(
+#     Test == "LocVSound" ~ "Location v Sound",
+#     Test == "LocVSmell" ~ "Location v Odor",
+#     Test == "SovSm" ~ "Sound v Odor"))
 #View(first_choices)
 
 
 # Remove trachops
 first_choices <- subset(first_choices, first_choices$Species != "T") # no Trachops
 
-#no need to remove nearest anymore
-unique(first_choices$first_hover)
-unique(first_choices$first_land)
-unique(first_choices$first_visit)
 
 
-first_choices$first_visit <- factor(first_choices$first_visit, levels = c("location", "sound", "smell", "neither"))
+first_choices$first_visit <- factor(first_choices$first_visit, levels = c("location", "smell", "sound", "neither"))
+
+
+#simplified doc for Gerry: 
+first_choices1<- first_choices %>%select(Bat.ID, Date, Species, Test, first_hover, first_land, first_visit, first_hover_nearest, first_land_nearest, first_visit_nearest)
+#write_csv(first_choices1, "first_choices.csv")
+```
+
+#summarise first choices by species, test, add small value to 0 bars for plotting
+```{r}
+first_choices1 <- first_choices1[!is.na(first_choices1$first_visit), ] # remove empty rows / bats that never visited
+
+first_visits_sum <- first_choices1 %>% group_by(Species, Test, first_visit) %>% summarise(n_visits= n()) %>% 
+  rbind(data.frame(Species = c("AJ", "L"), Test = rep("LocVSmell",2), first_visit = rep("smell",2), n_visits = rep(0.2,2) )) %>%  #fill in missing 0 rows with small value for plotting (.3) 
+
+  arrange(Species, Test)
+
+first_visits_sum 
+```
+
+# plotting first visits faceted by test for each species
+
+```{r}
+
+# New facet label names for Test variable
+Test.labs <- c("Location v Odor", "Location v Sound", "Sound v Odor")
+names(Test.labs) <- c("LocVSmell", "LocVSound", "SovSm")
+
+
+
+plot_FirstVisits <- function(species= "AJ"){
+
+firstvisits <-
+ first_visits_sum   %>% 
+mutate(first_visit = factor(first_visit, levels = c("location", "smell", "sound", "neither"))) %>% #reorder factor for plotting
+  filter(Species == species) %>%
+  ggplot(aes(x = first_visit, y = n_visits, fill = first_visit))+
+  facet_wrap(~Test,  labeller = labeller(Test = Test.labs), scales="free_x")+ 
+  geom_bar(stat = "identity")+
+  ggtitle(ifelse(species=="AJ", expression(paste("frugivorous ", italic("Artibeus jamaicensis"))), expression(paste("predatory ", italic("Lophostoma silvicolum")))))+
+  ylab("# Bats") +
+  xlab("Cues") +
+  scale_x_discrete(  labels=c("location" = "loc", "smell" ="odor", "sound" = "sound",  "neither" = "neither")) +
+   scale_fill_manual(name = "First visit", values=c(loc, odr, snd, nthr)) +
+   theme_cowplot()
+list(firstvisits)
+}
+
+# plot AJ first visits
+(aj.firstvisits<- plot_FirstVisits(species="AJ"))
+# walk(devices, ~ ggsave(filename = paste("aj.firstvisits", .x), device = .x , units = "mm", width = 173, height = 60 ))
+
+# plot Lophostoma first visits
+(l.firstvisits<- plot_FirstVisits(species="L"))
+# walk(devices, ~ ggsave(filename = paste("l.firstvisits", .x), device = .x , units = "mm", width = 173, height = 60 ))
+
+```
+
+
+
+
+
+```{r}
 
 #######This removes the 'nearest' columns##########
-drops <- c("vists_nearest","pct_visits_nearest")
-
-LocVSound <- LocVSound[ , !(names(LocVSound) %in% drops)]
-LocVSmell <- LocVSmell[ , !(names(LocVSmell) %in% drops)]
-SoundVSmell <- SoundVSmell[ , !(names(SoundVSmell) %in% drops)]
+# drops <- c("vists_nearest","pct_visits_nearest")
+# 
+# LocVSound <- LocVSound[ , !(names(LocVSound) %in% drops)]
+# LocVSmell <- LocVSmell[ , !(names(LocVSmell) %in% drops)]
+# SoundVSmell <- SoundVSmell[ , !(names(SoundVSmell) %in% drops)]
 
 #########This fixes names for 2 AJS 11.23.20##############
 #fix name for 2 AJs:
@@ -492,7 +562,7 @@ If it is okay to do this test, the p-value is 0.58, so the two species are quite
 
 ## confidence intervals and bootstrapping
 ```{r}
-# ## confidence intervals for plotting # mark
+# ## confidence intervals for plotting 
 # ## Could get the mean proportion of visits to cues from each of the species. bootstrap the mean proportion, then compare the 95% confidence intervals for each mean. (This code doesn't work as far as I know, Nov 2020)
 # ############CODE FROM BASTI#################################################
 # 
@@ -1941,7 +2011,12 @@ str(m_Alltests)
 
 ## Version of long data, m_Alltests, with no "NA"s
 ```{r}
+View(m_Alltests)
 m_Alltests1 <- drop_na(m_Alltests)
+
+Sensory_visits<- m_Alltests1 %>% mutate(cue = str_replace(cue, "pct_visits_loc", "location"), cue = str_replace(cue, "pct_visits_sound", "sound"), cue = str_replace(cue, "pct_visits_neither", "neither"), cue = str_replace(cue, "pct_visits_smell", "odor")) %>% select(-visits_prop)
+
+#write_csv(Sensory_visits, "Sensory_visits.csv")
 ```
 
 ## Data split by Test
@@ -2284,17 +2359,32 @@ hist_AJ_Lopho_prop
 prop_individual_bat_choices_bar <- ggplot(data = m_Alltests, aes(x= Bat.ID, y= visits_prop, fill =cue))+
 geom_bar(position="fill", stat="identity") +
 theme(axis.text.x = element_text(angle = 90, size = 5)) +
-facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free_x")
+facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free_x") +
+ylab("Proportion of visits") +
+scale_fill_discrete(name = "cue", labels = c("Location", "Sound", "Control", "Smell"))
 prop_individual_bat_choices_bar 
 #ggsave("prop_individual_bat_choices_bar.jpg")
 #ggsave("prop_individual_bat_choices_bar.pdf")
 
+
+###################
 #counts each bat/test
+
 counts_individual_bat_choices_bar <- ggplot(data = m_Alltests, aes(x= Bat.ID, y= visits_counts, fill =cue))+
 geom_bar(position="stack", stat="identity") +
 theme(axis.text.x = element_text(angle = 90, size = 5)) +
-facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free")
-counts_individual_bat_choices_bar
+facet_grid(cols= vars (Species),  rows=vars(Test), scales = "free") +
+ylab("Number of visits") +
+scale_fill_discrete(name = "cue", labels = c("Location", "Sound", "Control", "Smell"))
+counts_individual_bat_choices_bar 
+
+
+
+pct_visits_loc
+pct_visits_sound
+pct_visits_neither
+pct_visits_smell
+
 #ggsave("count_individual_bat_choices_bar.jpg")
 #ggsave("count_individual_bat_choices_bar.pdf")
 
@@ -2428,7 +2518,7 @@ test<- data %>%
   do(as.data.frame(weighted.sd(x=.$index_var,weight=.$weight_var)))
 test
 
-vg_pct_visits <-LocVSound_AJ_L %>% group_by(Species) %>%
+Avg_pct_visits <-LocVSound_AJ_L %>% group_by(Species) %>%
       summarise(avg_sound = mean(pct_visits_sound, na.rm=TRUE)*100, avg_loc= mean(pct_visits_loc, na.rm=TRUE)* 100 ,avg_neither = mean(pct_visits_neither, na.rm=TRUE)*100 )
 Avg_pct_visits
 

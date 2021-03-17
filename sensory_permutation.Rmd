@@ -1,0 +1,433 @@
+---
+title: "Sensory_permutation"
+author: "May"
+date: "1/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Cue disassociation test
+# Gerry Carter
+
+# load packages
+library(tidyverse)
+library(boot)
+library(cowplot)
+#library(lmer)
+library(lmerTest)
+library(purrr)
+library(svglite)
+
+# pre-sets for saving plots (walk())
+devices <- c('eps', 'pdf', 'jpeg', 'svg')
+
+
+## plot palattes: 
+loc <- "#c9caa8" #light green
+odr<- "#f2cf43" #yellow
+snd<- "#684e44" #brown purple
+nthr<- "#cc935E" #terra cotta
+
+
+
+# functions for bootstrapping 95% confidence intervals around the mean -----
+
+# get mean and 95% CI of values x via bootstrapping
+boot_ci <- function(x, perms=5000, bca=F) {
+  get_mean <- function(x, d) {
+    return(mean(x[d]))
+  } 
+  x <- as.vector(na.omit(x))
+  mean <- mean(x)
+  if(bca){
+    boot <- boot.ci(boot(data=x, 
+                         statistic=get_mean, 
+                         R=perms, 
+                         parallel = "multicore", 
+                         ncpus = 4), 
+                    type="bca")
+    low <- boot$bca[1,4]
+    high <- boot$bca[1,5] 
+  }else{
+    boot <- boot.ci(boot(data=x, 
+                         statistic=get_mean, 
+                         R=perms, 
+                         parallel = "multicore", 
+                         ncpus = 4), 
+                    type="perc")
+    low <- boot$perc[1,4]
+    high <- boot$perc[1,5] 
+  }
+  c(low=low,mean=mean,high=high, N=round(length(x)))
+}
+
+
+# get mean and 95% CI via bootstrapping of values y within grouping variable x
+boot_ci2 <- function(d=d, y=d$y, x=d$x, perms=5000, bca=F){
+  df <- data.frame(effect=unique(x))
+  df$low <- NA
+  df$mean <- NA
+  df$high <- NA
+  df$n.obs <- NA
+  for (i in 1:nrow(df)) {
+    ys <- y[which(x==df$effect[i])] #pulls out all the e.g.location prefs
+    if (length(ys)>1 & var(ys)>0 ){
+      b <- boot_ci(y[which(x==df$effect[i])], perms=perms, bca=bca) #resamples with replacement the mean and ci for e.g. AJs pref for location, gives back the low mean and high
+      df$low[i] <- b[1]
+      df$mean[i] <- b[2]
+      df$high[i] <- b[3]
+      df$n.obs[i] <- b[4]
+    }else{
+      df$low[i] <- min(ys)
+      df$mean[i] <- mean(ys)
+      df$high[i] <- max(ys)
+      df$n.obs[i] <- length(ys)
+    }
+  }
+  df
+}
+
+# plot permutation test results
+
+#one-tailed: 
+# hist_perm_one <- function(exp=exp, obs=obs, perms=perms, label=''){
+#   exp.range <- round(quantile(exp, probs= c(0.025, 0.975)),3)
+#   ggplot()+
+#     geom_histogram(aes(x=exp), color="black",fill="light blue")+
+#     geom_vline(aes(xintercept=obs), color="red", size=1)+
+#     xlab("expected values from null model")+
+#     ggtitle( paste(names(obs)) , subtitle = paste('obs = ',round(obs,3), ', exp = ', exp.range[1], ' to ', exp.range[2], ", Prob exp >= obs: p", ifelse(mean(exp>=obs)==0,paste("<",1/perms), paste("=",signif(mean(exp>=obs),digits=2))),", permutations=",perms, sep=""))
+# }
+
+
+#two-tailed: Not 100 sure about this: Tried to center the values around 0 by subtracting the mean of the exp distribution from exp and obs, and then took the absolute value of the exp and subtract from absolute value of obs. (have to center bc mean of distribution is way different than 0 )
+  
+hist_perm <- function(exp=exp, obs=obs, perms=perms, label=''){
+  exp.range <- round(quantile(exp, probs= c(0.025, 0.975)),3)
+  ggplot()+
+    geom_histogram(aes(x=exp), color="black",fill="light blue")+
+    geom_vline(aes(xintercept=obs), color="red", size=1)+
+    xlab("expected values from null model")+
+    ggtitle( paste(names(obs)) , subtitle = paste('obs = ',round(obs,3), ', exp = ', exp.range[1], ' to ', exp.range[2], ", Prob |exp| >= |obs|: two-sided p", ifelse(mean(abs(exp-mean(exp))>=abs(obs-mean(exp)))==0,paste("<",1/perms), paste("=",signif(mean(abs(exp-mean(exp))>=abs(obs-mean(exp))),digits=2))),", permutations=",perms, sep=""))
+}
+
+mean(abs(exp-mean(exp))>=abs(obs - mean(exp)))
+
+```
+
+```{r}
+# set directory
+#setwd("~/Users/maydixon/GitHub/Sensory_learning/Sensory_learning_1")
+
+# get data----
+d <-   read.csv("Sensory_visits.csv", stringsAsFactors = F) %>% 
+  rename(visits= visits_counts) %>% 
+  mutate(Test= case_when(
+    Test == "LocVSound" ~ "Location v Sound",
+    Test == "LocVSmell" ~ "Location v Odor",
+    Test == "SoundVSmell" ~ "Sound v Odor"))
+View(d)
+```
+
+```{r}
+# plot AJ data by bat
+d %>% 
+  filter(Species=="AJ") %>% 
+  ggplot(aes(x=cue, y=visits))+
+    facet_grid(rows= vars(Bat.ID), cols= vars(Test), scales= "free")+
+    geom_col(aes(fill=cue))
+
+# plot L data by bat
+d %>% 
+  filter(Species=="L") %>% 
+  ggplot(aes(x=cue, y=visits))+
+  facet_grid(rows= vars(Bat.ID), cols= vars(Test), scales= "free")+
+  geom_col(aes(fill=cue))
+```
+
+# what are the cue preferences by test?-----
+
+# make function to plot data
+```{r}
+plot_preference <- function(species= "AJ", use_percent=T){
+  
+  # default method is to center visits by trial to remove effect of total number of choices
+  # other method is to use proportions to remove effect of total number of choices
+  if(use_percent){
+    points <- 
+      d %>% 
+      # get species
+      filter(Species==species) %>% 
+      # center counts by bat
+      group_by(Bat.ID, Test) %>% 
+      mutate(pref = visits / sum(visits)) %>% 
+      ungroup() %>% 
+      # identify trial for bootstrapping
+      mutate(effect= paste(cue, Test, sep="_"))  
+ 
+  }else{
+    points <- 
+      d %>% 
+      # get species
+      filter(Species==species) %>% 
+      # center counts by bat
+      group_by(Bat.ID, Test) %>% 
+      mutate(pref = visits - mean (visits)) %>% 
+      ungroup() %>% 
+      # identify trial for bootstrapping
+      mutate(effect= paste(cue, Test, sep="_"))  
+    
+    
+  }
+
+      
+      
+      
+  # get means and 95% CI
+  set.seed(121)
+  means <- 
+    points %>% 
+    boot_ci2(y=.$pref, x=.$effect) %>% 
+    separate(effect, into=c('cue', 'Test'), sep="_", remove=F) 
+  
+  # plot means, 95% CI and raw data
+  plot <- 
+    means %>% 
+    mutate(cue = fct_relevel(cue, 
+            "location", "odor", "sound", "neither")) %>% #order the factor
+    ggplot(aes(x=cue, y=mean, color=cue))+
+    facet_wrap(~Test,  scales="free_x") + # the removing the strip currently doesn't work
+    geom_point(size=3)+
+    geom_jitter(data= points, aes(y= pref), size=1, alpha=0.5, width=0.1, height=0)+
+    geom_errorbar(aes(ymin=low, ymax=high, width=.1), size=1)+
+    geom_hline(yintercept = ifelse(use_percent, 0.33, 0), color= "dark grey")+
+    ylab(ifelse(use_percent,
+                "proportion of trial visits",
+                "relative # visits (obs - exp)"))+
+    xlab("Cues")+
+    ggtitle(ifelse(species=="AJ", expression(paste("frugivorous ", italic("Artibeus jamaicensis"))), 
+                                  expression(paste("predatory ", italic("Lophostoma silvicolum")))))+
+    theme_cowplot()+
+    # scale_color_manual(values=c('#1b9e77','dark grey','#d95f02','#7570b3'))
+    
+  # scale_color_manual(values=c('#c9cba3','#FFB833','#e26d5c','#723d46'))
+  # list(means,plot)
+    scale_color_manual(values=c(loc, odr, snd, nthr)) +
+    
+  scale_x_discrete(  labels=c("location" = "loc", "sound" = "sound", "smell" ="odor", "neither" = "neither"))
+  
+  list(means,plot) 
+  
+  
+}
+
+# get results----
+# use that function to plot preferences for AJ
+# table shows summary data that is plotted
+(aj.results <- plot_preference(species="AJ", use_percent = F))
+
+#export plot
+# walk(devices, ~ ggsave(filename = paste("aj.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
+
+# use that function plot preferences for L
+(l.results <- plot_preference(species="L", use_percent= F))
+# export plot 
+# walk(devices, ~ ggsave(filename = paste("l.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
+```
+
+
+
+
+```{r}
+
+
+# Are there species differences?-----
+# use permutation test to compare species (using null model that randomizes cue choices while controlling for everything else)
+
+
+# get difference between species in mean number of visits to each cue
+# store as vector of differences
+obs <- 
+  d %>% 
+  group_by(Species, cue, Test) %>% 
+  summarize(visits= mean(visits)) %>% 
+  pivot_wider(names_from = Species, values_from= visits) %>% 
+  mutate(diff= AJ-L) %>% 
+  arrange(Test,cue) %>% 
+  mutate(effect= gsub(" ", "", paste(Test, cue, sep="_")))  %>%  #identify trial, w removed spaces
+  pull(diff,effect) #pull effect as "names" for obs
+
+ 
+
+# numbers are AJ - L differences for:
+# location, neither, odor, scent, for each test
+# positive number means AJ made more visits
+# we cannot interpret these without the null model of what to expect by chance!
+
+
+obs
+names(obs)
+# get expected difference between species if bat choices of cue were random
+
+# how many permutations?
+perms <- 5000
+
+# store results in matrix
+exp <- matrix(NA, ncol=length(obs), nrow= perms) ##May: changed observed to obs
+colnames(exp)<- names(obs) #name the columns for easier ID
+
+# for loop to get expected results
+for (i in 1:perms){
+  
+  exp[i,] <- 
+    d %>% 
+    # re-assign visits to different cues within each trial 
+    group_by(Bat.ID, Test) %>% 
+    mutate(visits = visits[sample(row_number())]) %>%  
+    
+    # get same number as before
+    group_by(Species, cue, Test) %>% 
+    summarize(visits= mean(visits), .groups= 'drop') %>% # May: what does drop do here? Gerry:just new version of tidyverse gives it a warning that says drop, so it doesn't give a random warning. 
+    pivot_wider(names_from = Species, values_from= visits) %>% 
+    mutate(diff= AJ-L) %>% 
+    arrange(Test, cue) %>% 
+    mutate(effect= paste(cue, Test, sep="_"))  %>%  #identify trial
+    pull(diff,effect)
+}
+
+
+
+
+
+H_names <- paste("hist", colnames(exp), sep = "_")
+
+# Loc V Odor 
+# get p-value for species difference for location (column 1)
+(hist_LocationvOdor_location <- hist_perm(exp= exp[,1], obs= obs[1], perms=perms))
+ggsave(paste(paste("hist", names(obs[1]), ".png",sep = "_")))
+
+# get p-value for species difference for neither (column 2)
+(hist_LocationvOdor_neither <- hist_perm(exp= exp[,2], obs= obs[2], perms=perms))
+ggsave(paste(paste("hist", names(obs[2]), ".png",sep = "_")))
+
+# get p-value for species difference for odor (column 3)
+(hist_LocationvOdor_odor <- hist_perm(exp= exp[,3], obs= obs[3], perms=perms))
+ggsave(paste(paste("hist", names(obs[3]), ".png",sep = "_")))
+# Loc v Sound
+
+# get p-value for species difference for location (column 4)
+(hist_LocationvSound_location<- hist_perm(exp= exp[,4], obs= obs[4], perms=perms))
+ggsave(paste(paste("hist", names(obs[4]), ".png",sep = "_")))
+
+(hist_LocationvSound_neither <- hist_perm(exp= exp[,5], obs= obs[5], perms=perms))
+ggsave(paste(paste("hist", names(obs[5]), ".png",sep = "_")))
+
+(hist_LocationvSound_sound   <- hist_perm(exp= exp[,6], obs= obs[6], perms=perms))
+ggsave(paste(paste("hist", names(obs[6]), ".png",sep = "_")))
+  # Sound V Odor
+  
+(hist_SoundvOdor_neither <- hist_perm(exp= exp[,7], obs= obs[7], perms=perms))
+ggsave(paste(paste("hist", names(obs[7]), ".png",sep = "_")))
+
+(hist_SoundvOdor_odor <- hist_perm(exp= exp[,8], obs= obs[8], perms=perms)  ) 
+ggsave(paste(paste("hist", names(obs[8]), ".png",sep = "_")))
+
+(hist_SoundvOdor_sound <- hist_perm(exp= exp[,9], obs= obs[9], perms=perms)
+)
+ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")))
+
+
+
+###
+```
+
+
+# redundant- delete if above code works:this code sums responses in all three trials, and looks at difference between responses to the different cues. I think that this is probably flawed, bc the choice set is different in the 3 set, so think we should only compare difference in visits between visits to a cue for a given test,  for example, only compare differences in visits to location in the loc v smell tests. 
+```{r}
+
+
+# Are there species differences?-----
+# use permutation test to compare species (using null model that randomizes cue choices while controlling for everything else)
+
+
+# get difference between species in mean number of visits to each cue
+# store as vector of differences
+obs <- 
+  d %>% 
+  group_by(Species, cue) %>% 
+  summarize(visits= mean(visits)) %>% 
+  pivot_wider(names_from = Species, values_from= visits) %>% 
+  mutate(diff= AJ-L) %>% 
+  arrange(cue) %>% 
+  pull(diff)
+
+# numbers are AJ - L differences for:
+# location, neither, odor, scent
+# positive number means AJ made more visits
+# we cannot interpret these without the null model of what to expect by chance!
+
+##May:  Why wouldn't you want to separate this by test? visits to neither or sound in different tests are different? and visits to neither are in all 3? Don't I want to know if they were different from each other in each of these three comparisons?**
+## Maybe bc it's messy? Less power divided? Is what Gerry did flawed?  
+
+obs
+
+# get expected difference between species if bat choices of cue were random
+
+# how many permutations?
+perms <- 1000
+
+# store results in matrix
+exp <- matrix(NA, ncol=length(obs), nrow= perms) ##May: changed observed to obs
+
+# for loop to get expected results
+for (i in 1:perms){
+  
+  exp[i,] <- 
+    d %>% 
+    # re-assign visits to different cues within each trial
+    group_by(Bat.ID, Test) %>% 
+    mutate(visits = visits[sample(row_number())]) %>%  
+    
+    # get same number as before
+    group_by(Species, cue) %>% 
+    summarize(visits= mean(visits), .groups= 'drop') %>% # May: what does drop do here? #just new version of tidyverse gives it a warning that says drop, so it doesn't give a random warning. 
+    pivot_wider(names_from = Species, values_from= visits) %>% 
+    mutate(diff= AJ-L) %>% 
+    arrange(cue) %>% 
+    pull(diff)
+}
+
+obs_names
+
+
+
+# get p-value for species difference for location (column 1)
+hist_perm(exp= exp[,1], obs= obs[1], perms=perms)
+
+
+# get p-value for species difference for neither (column 2)
+hist_perm(exp= exp[,2], obs= obs[2], perms=perms)
+
+# get p-value for species difference for odor (column 3)
+hist_perm(exp= exp[,3], obs= obs[3], perms=perms)
+
+# get p-value for species difference for sound (column 4)
+hist_perm(exp= exp[,4], obs= obs[4], perms=perms)
+
+###
+
+hist(exp[,1])
+hist(exp[,2])
+hist(exp[,3])
+
+t.test(exp[,1], exp[,2])
+
+###
+```
+
+
+
