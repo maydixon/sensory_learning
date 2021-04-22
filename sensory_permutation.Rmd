@@ -20,7 +20,9 @@ library(cowplot)
 #library(lmer)
 library(lmerTest)
 library(purrr)
+library(rstatix)
 library(svglite)
+library(beepr)
 
 # pre-sets for saving plots (walk())
 devices <- c('eps', 'pdf', 'jpeg', 'svg')
@@ -112,10 +114,10 @@ hist_perm <- function(exp=exp, obs=obs, perms=perms, label=''){
     geom_histogram(aes(x=exp), color="black",fill="light blue")+
     geom_vline(aes(xintercept=obs), color="red", size=1)+
     xlab("expected values from null model")+
-    ggtitle( paste(names(obs)) , subtitle = paste('obs = ',round(obs,3), ', exp = ', exp.range[1], ' to ', exp.range[2], ", Prob |exp| >= |obs|: two-sided p", ifelse(mean(abs(exp-mean(exp))>=abs(obs-mean(exp)))==0,paste("<",1/perms), paste("=",signif(mean(abs(exp-mean(exp))>=abs(obs-mean(exp))),digits=2))),", permutations=",perms, sep=""))
+    ggtitle( paste(names(obs)) , subtitle = paste('obs = ',round(obs,0), ', exp = ', round(exp.range[1],0), ' to ', round(exp.range[2],0), ", P", ifelse(mean(abs(exp-mean(exp))>=abs(obs-mean(exp)))==0,paste("<",1/perms), paste("=",signif(mean(abs(exp-mean(exp))>=abs(obs-mean(exp))),digits=2))), sep=""))
 }
 
-mean(abs(exp-mean(exp))>=abs(obs - mean(exp)))
+
 
 ```
 
@@ -124,13 +126,20 @@ mean(abs(exp-mean(exp))>=abs(obs - mean(exp)))
 #setwd("~/Users/maydixon/GitHub/Sensory_learning/Sensory_learning_1")
 
 # get data----
-d <-   read.csv("Sensory_visits.csv", stringsAsFactors = F) %>% 
+
+#all visits
+d <- read.csv("https://raw.githubusercontent.com/maydixon/sensory_learning/master/Sensory_visits.csv", sep=",", header=TRUE, stringsAsFactors = F )%>% 
   rename(visits= visits_counts) %>% 
   mutate(Test= case_when(
     Test == "LocVSound" ~ "Location v Sound",
     Test == "LocVSmell" ~ "Location v Odor",
     Test == "SoundVSmell" ~ "Sound v Odor"))
+ #on github
 View(d)
+
+#first visits
+first_choices1 <- read.csv("https://raw.githubusercontent.com/maydixon/sensory_learning/master/first_choices.csv", sep=",", header=TRUE, stringsAsFactors = F )
+View(first_choices1)
 ```
 
 ```{r}
@@ -239,26 +248,84 @@ plot_preference <- function(species= "AJ", use_percent=T){
 # walk(devices, ~ ggsave(filename = paste("l.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
 ```
 
+# Did bats have cue preferences on their first visits? 
 
+#summarise first choices by Species, Test, add small value to 0 bars for plotting purposes only
+```{r}
+first_choices1 <- first_choices1[!is.na(first_choices1$first_visit), ] # remove empty rows / bats that never visited
 
+first_visits_sum <- first_choices1 %>% 
+  group_by(Species, Test, first_visit) %>% 
+  summarise(n_visits= n()) %>% 
+  rbind(data.frame(Species = c("AJ", "L"), Test = rep("LocVSmell",2), first_visit = rep("smell",2), n_visits = rep(0.2,2) )) %>%  #fill in missing 0 rows with small value for plotting (.3) 
+  arrange(Species, Test)
+
+first_visits_sum 
+```
+
+# plotting first visits faceted by test for each species
 
 ```{r}
 
+# New facet label names for Test variable
+Test.labs <- c("Location v Odor", "Location v Sound", "Sound v Odor")
+names(Test.labs) <- c("LocVSmell", "LocVSound", "SovSm")
+
+
+
+plot_FirstVisits <- function(species= "AJ"){
+
+firstvisits <-
+ first_visits_sum   %>% 
+  mutate(first_visit = factor(first_visit, levels = c("location", "smell", "sound", "neither"))) %>% #reorder factor for plotting
+  filter(Species == species) %>%
+  ggplot(aes(x = first_visit, y = n_visits, fill = first_visit))+
+  facet_wrap(~Test,  labeller = labeller(Test = Test.labs), scales="free_x")+ 
+  geom_bar(stat = "identity")+
+  ggtitle(ifelse(species=="AJ", expression(paste("frugivorous ", italic("Artibeus jamaicensis"))), expression(paste("predatory ", italic("Lophostoma silvicolum")))))+
+  ylab("# Bats") +
+  xlab("Cues") +
+  scale_x_discrete(  labels=c("location" = "loc", "smell" ="odor", "sound" = "sound",  "neither" = "neither")) +
+   scale_fill_manual(name = "First visit", values=c(loc, odr, snd, nthr)) +
+   theme_cowplot()
+list(firstvisits)
+}
+
+# plot AJ first visits
+(aj.firstvisits<- plot_FirstVisits(species="AJ"))
+# walk(devices, ~ ggsave(filename = paste("aj.firstvisits", .x), device = .x , units = "mm", width = 173, height = 60 ))
+
+# plot Lophostoma first visits
+(l.firstvisits<- plot_FirstVisits(species="L"))
+# walk(devices, ~ ggsave(filename = paste("l.firstvisits", .x), device = .x , units = "mm", width = 173, height = 60 ))
+
+```
+
+
+
 
 # Are there species differences?-----
+```{r}
+
 # use permutation test to compare species (using null model that randomizes cue choices while controlling for everything else)
 
 
 # get difference between species in mean number of visits to each cue
 # store as vector of differences
+## visit
+
+
+
+
 obs <- 
   d %>% 
+  mutate(cue = replace(cue, cue =="neither", "control")) %>% #trying to replace rename neither with control
   group_by(Species, cue, Test) %>% 
   summarize(visits= mean(visits)) %>% 
   pivot_wider(names_from = Species, values_from= visits) %>% 
   mutate(diff= AJ-L) %>% 
   arrange(Test,cue) %>% 
-  mutate(effect= gsub(" ", "", paste(Test, cue, sep="_")))  %>%  #identify trial, w removed spaces
+  mutate(effect= gsub(" ", " ", paste(Test, cue, sep=" - ")))  %>%  #identify trial, w removed spaces
   pull(diff,effect) #pull effect as "names" for obs
 
  
@@ -297,48 +364,50 @@ for (i in 1:perms){
     arrange(Test, cue) %>% 
     mutate(effect= paste(cue, Test, sep="_"))  %>%  #identify trial
     pull(diff,effect)
+  beep(12)
 }
-
-
 
 
 
 H_names <- paste("hist", colnames(exp), sep = "_")
 
+wd= 3
+ht = 3
+uts="in"
 # Loc V Odor 
 # get p-value for species difference for location (column 1)
-(hist_LocationvOdor_location <- hist_perm(exp= exp[,1], obs= obs[1], perms=perms))
-ggsave(paste(paste("hist", names(obs[1]), ".png",sep = "_")))
+(hist_LocationvOdor_control <- hist_perm(exp= exp[,1], obs= obs[1], perms=perms))
+ggsave(paste(paste("hist", names(obs[1]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 # get p-value for species difference for neither (column 2)
-(hist_LocationvOdor_neither <- hist_perm(exp= exp[,2], obs= obs[2], perms=perms))
-ggsave(paste(paste("hist", names(obs[2]), ".png",sep = "_")))
+(hist_LocationvOdor_location <- hist_perm(exp= exp[,2], obs= obs[2], perms=perms))
+ggsave(paste(paste("hist", names(obs[2]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 # get p-value for species difference for odor (column 3)
 (hist_LocationvOdor_odor <- hist_perm(exp= exp[,3], obs= obs[3], perms=perms))
-ggsave(paste(paste("hist", names(obs[3]), ".png",sep = "_")))
+ggsave(paste(paste("hist", names(obs[3]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 # Loc v Sound
 
 # get p-value for species difference for location (column 4)
-(hist_LocationvSound_location<- hist_perm(exp= exp[,4], obs= obs[4], perms=perms))
-ggsave(paste(paste("hist", names(obs[4]), ".png",sep = "_")))
+(hist_LocationvSound_control<- hist_perm(exp= exp[,4], obs= obs[4], perms=perms)) #wrong
+ggsave(paste(paste("hist", names(obs[4]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
-(hist_LocationvSound_neither <- hist_perm(exp= exp[,5], obs= obs[5], perms=perms))
-ggsave(paste(paste("hist", names(obs[5]), ".png",sep = "_")))
+(hist_LocationvSound_location <- hist_perm(exp= exp[,5], obs= obs[5], perms=perms)) #wrong
+ggsave(paste(paste("hist", names(obs[5]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_LocationvSound_sound   <- hist_perm(exp= exp[,6], obs= obs[6], perms=perms))
-ggsave(paste(paste("hist", names(obs[6]), ".png",sep = "_")))
+ggsave(paste(paste("hist", names(obs[6]), ".png",sep = "_")), width = wd, units = uts, height = ht)
   # Sound V Odor
   
-(hist_SoundvOdor_neither <- hist_perm(exp= exp[,7], obs= obs[7], perms=perms))
-ggsave(paste(paste("hist", names(obs[7]), ".png",sep = "_")))
+(hist_SoundvOdor_control <- hist_perm(exp= exp[,7], obs= obs[7], perms=perms))
+ggsave(paste(paste("hist", names(obs[7]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_SoundvOdor_odor <- hist_perm(exp= exp[,8], obs= obs[8], perms=perms)  ) 
-ggsave(paste(paste("hist", names(obs[8]), ".png",sep = "_")))
+ggsave(paste(paste("hist", names(obs[8]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_SoundvOdor_sound <- hist_perm(exp= exp[,9], obs= obs[9], perms=perms)
 )
-ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")))
+ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 
 
@@ -346,88 +415,7 @@ ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")))
 ```
 
 
-# redundant- delete if above code works:this code sums responses in all three trials, and looks at difference between responses to the different cues. I think that this is probably flawed, bc the choice set is different in the 3 set, so think we should only compare difference in visits between visits to a cue for a given test,  for example, only compare differences in visits to location in the loc v smell tests. 
-```{r}
 
-
-# Are there species differences?-----
-# use permutation test to compare species (using null model that randomizes cue choices while controlling for everything else)
-
-
-# get difference between species in mean number of visits to each cue
-# store as vector of differences
-obs <- 
-  d %>% 
-  group_by(Species, cue) %>% 
-  summarize(visits= mean(visits)) %>% 
-  pivot_wider(names_from = Species, values_from= visits) %>% 
-  mutate(diff= AJ-L) %>% 
-  arrange(cue) %>% 
-  pull(diff)
-
-# numbers are AJ - L differences for:
-# location, neither, odor, scent
-# positive number means AJ made more visits
-# we cannot interpret these without the null model of what to expect by chance!
-
-##May:  Why wouldn't you want to separate this by test? visits to neither or sound in different tests are different? and visits to neither are in all 3? Don't I want to know if they were different from each other in each of these three comparisons?**
-## Maybe bc it's messy? Less power divided? Is what Gerry did flawed?  
-
-obs
-
-# get expected difference between species if bat choices of cue were random
-
-# how many permutations?
-perms <- 1000
-
-# store results in matrix
-exp <- matrix(NA, ncol=length(obs), nrow= perms) ##May: changed observed to obs
-
-# for loop to get expected results
-for (i in 1:perms){
-  
-  exp[i,] <- 
-    d %>% 
-    # re-assign visits to different cues within each trial
-    group_by(Bat.ID, Test) %>% 
-    mutate(visits = visits[sample(row_number())]) %>%  
-    
-    # get same number as before
-    group_by(Species, cue) %>% 
-    summarize(visits= mean(visits), .groups= 'drop') %>% # May: what does drop do here? #just new version of tidyverse gives it a warning that says drop, so it doesn't give a random warning. 
-    pivot_wider(names_from = Species, values_from= visits) %>% 
-    mutate(diff= AJ-L) %>% 
-    arrange(cue) %>% 
-    pull(diff)
-}
-
-obs_names
-
-
-
-# get p-value for species difference for location (column 1)
-hist_perm(exp= exp[,1], obs= obs[1], perms=perms)
-
-
-# get p-value for species difference for neither (column 2)
-hist_perm(exp= exp[,2], obs= obs[2], perms=perms)
-
-# get p-value for species difference for odor (column 3)
-hist_perm(exp= exp[,3], obs= obs[3], perms=perms)
-
-# get p-value for species difference for sound (column 4)
-hist_perm(exp= exp[,4], obs= obs[4], perms=perms)
-
-###
-
-hist(exp[,1])
-hist(exp[,2])
-hist(exp[,3])
-
-t.test(exp[,1], exp[,2])
-
-###
-```
 
 
 

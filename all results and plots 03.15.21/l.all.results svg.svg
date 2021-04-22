@@ -39,21 +39,22 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1242"
-     inkscape:window-height="728"
+     inkscape:window-width="750"
+     inkscape:window-height="693"
      id="namedview7598"
      showgrid="false"
      fit-margin-top="0.4"
      fit-margin-right="0.4"
      fit-margin-bottom="0.4"
      fit-margin-left="0.4"
-     inkscape:zoom="1.2882451"
-     inkscape:cx="266.9338"
-     inkscape:cy="260.24325"
-     inkscape:window-x="0"
+     inkscape:zoom="0.64254191"
+     inkscape:cx="-84.905433"
+     inkscape:cy="216.426"
+     inkscape:window-x="300"
      inkscape:window-y="25"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg7596" />
+     inkscape:current-layer="g10027"
+     inkscape:document-rotation="0" />
   <defs
      id="defs7157">
     <rect
@@ -1305,6 +1306,17 @@
   <g
      id="g10027"
      transform="translate(5.1965708,134.24703)">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="438.05014"
+       y="-9.2988834"
+       id="text843"><tspan
+         sodipodi:role="line"
+         id="tspan841"
+         x="438.05014"
+         y="-9.2988834"
+         style="stroke-width:0.75">control</tspan></text>
     <rect
        x="38.687656"
        y="-82.818878"
@@ -1595,14 +1607,6 @@
        id="text7797"
        transform="translate(-3.6023443,-137.00888)">sound</text>
     <text
-       x="442.06"
-       y="127.06"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text7799"
-       transform="translate(-3.6023443,-137.00888)">neither</text>
-    <text
        x="36.740002"
        y="18.49"
        style="font-size:16px;font-family:Arial"
@@ -1650,167 +1654,218 @@
        xml:space="preserve"
        id="text10266"
        style="line-height:1.25;font-family:sans-serif;font-size:11.99999983000000014px;letter-spacing:0px;white-space:pre;shape-inside:url(#rect10268);" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="-0.86687541"
+       y="-93.183701"
+       id="text1216"><tspan
+         sodipodi:role="line"
+         id="tspan1214"
+         x="-0.86687541"
+         y="-93.183701"
+         style="stroke-width:0.75"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;font-family:sans-serif;-inkscape-font-specification:sans-serif"
+   id="tspan1218">A</tspan>.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="-0.99617171"
+       y="13.817087"
+       id="text1232"><tspan
+         sodipodi:role="line"
+         id="tspan1230"
+         x="-0.99617171"
+         y="13.817087"
+         style="stroke-width:0.75">B.</tspan></text>
   </g>
+  <text
+     xml:space="preserve"
+     style="font-size:11.5537px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="119.71065"
+     y="149.09042"
+     id="text590"
+     transform="scale(0.96281131,1.0386251)"><tspan
+       sodipodi:role="line"
+       id="tspan588"
+       x="119.71065"
+       y="149.09042"
+       style="font-size:11.5537px;stroke-width:0.75" /></text>
   <g
-     id="g9975"
-     transform="translate(517.95502,136.25374)">
+     id="g707">
+    <g
+       id="g9975"
+       transform="translate(517.95502,136.25374)">
+      <text
+         x="104.82"
+         y="257.22"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="24.02"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9921"
+         transform="translate(-526.14052,-42.271635)">odor</text>
+      <text
+         x="95.93"
+         y="143.84"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="24.02"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9923"
+         transform="translate(-516.23826,-138.7291)">odor</text>
+      <text
+         x="221.27"
+         y="143.84"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="32.700001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9927"
+         transform="translate(-516.23826,-138.7291)">sound</text>
+      <text
+         x="309.62"
+         y="143.84"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="24.02"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9931"
+         transform="translate(-516.23826,-138.7291)">odor</text>
+      <text
+         x="346.60999"
+         y="143.84"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="32.700001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9933"
+         transform="translate(-516.23826,-138.7291)">sound</text>
+      <text
+         x="226.60001"
+         y="257.22"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="32.700001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9939"
+         transform="translate(-526.14052,-42.271635)">sound</text>
+      <text
+         x="312.51001"
+         y="257.22"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="24.02"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9943"
+         transform="translate(-527.64052,-42.271635)">odor</text>
+      <text
+         x="348.39001"
+         y="257.22"
+         text-anchor="middle"
+         style="font-size:12px;font-family:Arial"
+         textLength="32.700001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9945"
+         transform="translate(-526.14052,-42.271635)">sound</text>
+      <text
+         x="442.06"
+         y="81.169998"
+         style="font-size:12px;font-family:Arial"
+         textLength="41.360001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9949"
+         transform="translate(-799.24551,-76.053266)">location</text>
+      <text
+         x="442.06"
+         y="81.169998"
+         style="font-size:12px;font-family:Arial"
+         textLength="41.360001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9951"
+         transform="translate(-919.16691,-76.089609)">location</text>
+      <text
+         x="442.06"
+         y="81.169998"
+         style="font-size:12px;font-family:Arial"
+         textLength="41.360001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9953"
+         transform="translate(-801.97962,133.88614)">location</text>
+      <text
+         x="442.06"
+         y="81.169998"
+         style="font-size:12px;font-family:Arial"
+         textLength="41.360001"
+         lengthAdjust="spacingAndGlyphs"
+         id="text9955"
+         transform="translate(-921.35999,133.82074)">location</text>
+    </g>
     <text
-       x="104.82"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="24.02"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9921"
-       transform="translate(-526.14052,-42.271635)">odor</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="113.46841"
+       y="141.6003"
+       id="text594"><tspan
+         sodipodi:role="line"
+         id="tspan592"
+         x="113.46841"
+         y="141.6003"
+         style="stroke-width:0.75">control</tspan></text>
     <text
-       x="95.93"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="24.02"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9923"
-       transform="translate(-516.23826,-138.7291)">odor</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="242.46841"
+       y="141.6003"
+       id="text614"><tspan
+         sodipodi:role="line"
+         id="tspan612"
+         x="242.46841"
+         y="141.6003"
+         style="stroke-width:0.75">control</tspan></text>
     <text
-       x="132.92"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9925"
-       transform="translate(-516.23826,-138.7291)">neither</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="368.46838"
+       y="141.6003"
+       id="text618"><tspan
+         sodipodi:role="line"
+         id="tspan616"
+         x="368.46838"
+         y="141.6003"
+         style="stroke-width:0.75">control</tspan></text>
     <text
-       x="221.27"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="32.700001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9927"
-       transform="translate(-516.23826,-138.7291)">sound</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="112.33884"
+       y="351.26022"
+       id="text622"><tspan
+         sodipodi:role="line"
+         id="tspan620"
+         x="112.33884"
+         y="351.26022"
+         style="stroke-width:0.75">control</tspan></text>
     <text
-       x="258.26001"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9929"
-       transform="translate(-511.73826,-138.7291)">neither</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="236.83884"
+       y="351.26022"
+       id="text626"><tspan
+         sodipodi:role="line"
+         id="tspan624"
+         x="236.83884"
+         y="351.26022"
+         style="stroke-width:0.75">control</tspan></text>
     <text
-       x="309.62"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="24.02"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9931"
-       transform="translate(-516.23826,-138.7291)">odor</text>
-    <text
-       x="346.60999"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="32.700001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9933"
-       transform="translate(-516.23826,-138.7291)">sound</text>
-    <text
-       x="383.60001"
-       y="143.84"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9935"
-       transform="translate(-513.23826,-138.7291)">neither</text>
-    <text
-       x="140.7"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9937"
-       transform="translate(-523.14052,-42.271635)">neither</text>
-    <text
-       x="226.60001"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="32.700001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9939"
-       transform="translate(-524.64052,-42.271635)">sound</text>
-    <text
-       x="262.48001"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9941"
-       transform="translate(-521.64052,-42.271635)">neither</text>
-    <text
-       x="312.51001"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="24.02"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9943"
-       transform="translate(-526.14052,-42.271635)">odor</text>
-    <text
-       x="348.39001"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="32.700001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9945"
-       transform="translate(-526.14052,-42.271635)">sound</text>
-    <text
-       x="384.26001"
-       y="257.22"
-       text-anchor="middle"
-       style="font-size:12px;font-family:Arial"
-       textLength="36.689999"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9947"
-       transform="translate(-523.14052,-42.271635)">neither</text>
-    <text
-       x="442.06"
-       y="81.169998"
-       style="font-size:12px;font-family:Arial"
-       textLength="41.360001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9949"
-       transform="translate(-799.24551,-76.053266)">location</text>
-    <text
-       x="442.06"
-       y="81.169998"
-       style="font-size:12px;font-family:Arial"
-       textLength="41.360001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9951"
-       transform="translate(-919.16691,-76.089609)">location</text>
-    <text
-       x="442.06"
-       y="81.169998"
-       style="font-size:12px;font-family:Arial"
-       textLength="41.360001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9953"
-       transform="translate(-801.97962,133.88614)">location</text>
-    <text
-       x="442.06"
-       y="81.169998"
-       style="font-size:12px;font-family:Arial"
-       textLength="41.360001"
-       lengthAdjust="spacingAndGlyphs"
-       id="text9955"
-       transform="translate(-921.35999,133.82074)">location</text>
+       xml:space="preserve"
+       style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+       x="359.83881"
+       y="351.26022"
+       id="text630"><tspan
+         sodipodi:role="line"
+         id="tspan628"
+         x="359.83881"
+         y="351.26022"
+         style="stroke-width:0.75">control</tspan></text>
   </g>
 </svg>

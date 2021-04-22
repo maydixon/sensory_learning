@@ -134,15 +134,17 @@ first_choices$first_visit <- factor(first_choices$first_visit, levels = c("locat
 #simplified doc for Gerry: 
 first_choices1<- first_choices %>%select(Bat.ID, Date, Species, Test, first_hover, first_land, first_visit, first_hover_nearest, first_land_nearest, first_visit_nearest)
 #write_csv(first_choices1, "first_choices.csv")
+View(first_choices1)
 ```
 
-#summarise first choices by species, test, add small value to 0 bars for plotting
+#summarise first choices by Species, Test, add small value to 0 bars for plotting purposes only
 ```{r}
 first_choices1 <- first_choices1[!is.na(first_choices1$first_visit), ] # remove empty rows / bats that never visited
 
-first_visits_sum <- first_choices1 %>% group_by(Species, Test, first_visit) %>% summarise(n_visits= n()) %>% 
+first_visits_sum <- first_choices1 %>% 
+  group_by(Species, Test, first_visit) %>% 
+  summarise(n_visits= n()) %>% 
   rbind(data.frame(Species = c("AJ", "L"), Test = rep("LocVSmell",2), first_visit = rep("smell",2), n_visits = rep(0.2,2) )) %>%  #fill in missing 0 rows with small value for plotting (.3) 
-
   arrange(Species, Test)
 
 first_visits_sum 
@@ -162,7 +164,7 @@ plot_FirstVisits <- function(species= "AJ"){
 
 firstvisits <-
  first_visits_sum   %>% 
-mutate(first_visit = factor(first_visit, levels = c("location", "smell", "sound", "neither"))) %>% #reorder factor for plotting
+  mutate(first_visit = factor(first_visit, levels = c("location", "smell", "sound", "neither"))) %>% #reorder factor for plotting
   filter(Species == species) %>%
   ggplot(aes(x = first_visit, y = n_visits, fill = first_visit))+
   facet_wrap(~Test,  labeller = labeller(Test = Test.labs), scales="free_x")+ 

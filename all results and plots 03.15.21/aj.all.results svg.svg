@@ -39,15 +39,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1328"
-     inkscape:window-height="884"
+     inkscape:window-width="1280"
+     inkscape:window-height="694"
      id="namedview2433"
      showgrid="false"
-     inkscape:zoom="1.1711233"
-     inkscape:cx="236.68301"
-     inkscape:cy="273.75919"
-     inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:zoom="0.85815127"
+     inkscape:cx="394.43582"
+     inkscape:cy="285.89828"
+     inkscape:window-x="20"
+     inkscape:window-y="78"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2431"
      fit-margin-top="0.4"
@@ -55,7 +55,8 @@
      fit-margin-right="0.4"
      fit-margin-bottom="0.4"
      units="mm"
-     inkscape:pagecheckerboard="true" />
+     inkscape:pagecheckerboard="true"
+     inkscape:document-rotation="0" />
   <defs
      id="defs1978">
     <style
@@ -151,6 +152,191 @@
      id="rect1980"
      x="1.1338582"
      y="1.1338582" />
+  <g
+     id="g9975"
+     transform="translate(519.57595,139.43837)">
+    <text
+       x="104.82"
+       y="257.22"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="24.02"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9921"
+       transform="translate(-526.14052,-42.271635)">odor</text>
+    <text
+       x="95.93"
+       y="143.84"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="24.02"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9923"
+       transform="translate(-516.23826,-138.7291)">odor</text>
+    <text
+       x="221.27"
+       y="143.84"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="32.700001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9927"
+       transform="translate(-516.23826,-138.7291)">sound</text>
+    <text
+       x="309.62"
+       y="143.84"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="24.02"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9931"
+       transform="translate(-516.23826,-138.7291)">odor</text>
+    <text
+       x="346.60999"
+       y="143.84"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="32.700001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9933"
+       transform="translate(-516.23826,-138.7291)">sound</text>
+    <text
+       x="226.60001"
+       y="257.22"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="32.700001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9939"
+       transform="translate(-526.14052,-42.271635)">sound</text>
+    <text
+       x="312.51001"
+       y="257.22"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="24.02"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9943"
+       transform="translate(-527.64052,-42.271635)">odor</text>
+    <text
+       x="348.39001"
+       y="257.22"
+       text-anchor="middle"
+       style="font-size:12px;font-family:Arial"
+       textLength="32.700001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9945"
+       transform="translate(-526.14052,-42.271635)">sound</text>
+    <text
+       x="442.06"
+       y="81.169998"
+       style="font-size:12px;font-family:Arial"
+       textLength="41.360001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9949"
+       transform="translate(-799.24551,-76.053266)">location</text>
+    <text
+       x="442.06"
+       y="81.169998"
+       style="font-size:12px;font-family:Arial"
+       textLength="41.360001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9951"
+       transform="translate(-919.16691,-76.089609)">location</text>
+    <text
+       x="442.06"
+       y="81.169998"
+       style="font-size:12px;font-family:Arial"
+       textLength="41.360001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9953"
+       transform="translate(-801.97962,133.88614)">location</text>
+    <text
+       x="442.06"
+       y="81.169998"
+       style="font-size:12px;font-family:Arial"
+       textLength="41.360001"
+       lengthAdjust="spacingAndGlyphs"
+       id="text9955"
+       transform="translate(-921.35999,133.82074)">location</text>
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="115.08933"
+     y="144.78493"
+     id="text594"><tspan
+       sodipodi:role="line"
+       id="tspan592"
+       x="115.08933"
+       y="144.78493"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="244.08934"
+     y="144.78493"
+     id="text614"><tspan
+       sodipodi:role="line"
+       id="tspan612"
+       x="244.08934"
+       y="144.78493"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="370.08932"
+     y="144.78493"
+     id="text618"><tspan
+       sodipodi:role="line"
+       id="tspan616"
+       x="370.08932"
+       y="144.78493"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="113.95976"
+     y="354.44485"
+     id="text622"><tspan
+       sodipodi:role="line"
+       id="tspan620"
+       x="113.95976"
+       y="354.44485"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="238.45976"
+     y="354.44485"
+     id="text626"><tspan
+       sodipodi:role="line"
+       id="tspan624"
+       x="238.45976"
+       y="354.44485"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="361.45975"
+     y="354.44485"
+     id="text630"><tspan
+       sodipodi:role="line"
+       id="tspan628"
+       x="361.45975"
+       y="354.44485"
+       style="stroke-width:0.75">control</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="445.75403"
+     y="127.98743"
+     id="text843"><tspan
+       sodipodi:role="line"
+       id="tspan841"
+       x="445.75403"
+       y="127.98743"
+       style="stroke-width:0.75">control</tspan></text>
   <defs
      id="defs1985">
     <clipPath
@@ -1152,15 +1338,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline2329"
      transform="translate(-6.6073531,97.105845)" />
-  <text
-     x="104.82"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="24.02"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2333"
-     transform="translate(-6.6073531,97.105845)">odor</text>
   <polyline
      points="36.74,128.74 155.11,128.74 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1181,24 +1358,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline6382"
      transform="translate(3.2949149,0.64837895)" />
-  <text
-     x="95.93"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="24.02"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6386"
-     transform="translate(3.2949149,0.64837895)">odor</text>
-  <text
-     x="132.92"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6388"
-     transform="translate(3.2949149,0.64837895)">neither</text>
   <polyline
      points="162.08,128.74 280.45,128.74 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1219,24 +1378,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline6396"
      transform="translate(3.2949149,0.64837895)" />
-  <text
-     x="221.27"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="32.700001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6400"
-     transform="translate(3.2949149,0.64837895)">sound</text>
-  <text
-     x="258.26001"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6402"
-     transform="translate(6.2949149,0.64837895)">neither</text>
   <polyline
      points="287.43,128.74 405.79,128.74 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1257,33 +1398,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline6410"
      transform="translate(3.2949149,0.64837895)" />
-  <text
-     x="309.62"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="24.02"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6412"
-     transform="translate(3.2949149,0.64837895)">odor</text>
-  <text
-     x="346.60999"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="32.700001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6414"
-     transform="translate(3.2949149,0.64837895)">sound</text>
-  <text
-     x="383.60001"
-     y="143.84"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6416"
-     transform="translate(6.2949149,0.64837895)">neither</text>
   <polyline
      points="36.74,128.74 36.74,50.90 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1419,14 +1533,6 @@
      id="text6458"
      transform="translate(3.2949149,0.64837895)">sound</text>
   <text
-     x="442.06"
-     y="127.19"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text6460"
-     transform="translate(3.2949149,0.64837895)">neither</text>
-  <text
      x="36.740002"
      y="18.620001"
      style="font-size:16px;font-family:Arial"
@@ -1442,15 +1548,6 @@
      lengthAdjust="spacingAndGlyphs"
      id="text6464"
      transform="translate(7.7949149,0.64837895)">Artibeus jamaicensis</text>
-  <text
-     x="140.7"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2335"
-     transform="translate(-3.6073531,97.105845)">neither</text>
   <polyline
      points="169.20,242.13 284.01,242.13 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1471,24 +1568,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline2343"
      transform="translate(-6.6073531,97.105845)" />
-  <text
-     x="226.60001"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="32.700001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2347"
-     transform="translate(-6.6073531,97.105845)">sound</text>
-  <text
-     x="262.48001"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2349"
-     transform="translate(-3.6073531,97.105845)">neither</text>
   <polyline
      points="290.98,242.13 405.79,242.13 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1509,33 +1588,6 @@
      style="stroke-width:1.07;stroke-linecap:butt"
      id="polyline2357"
      transform="translate(-6.6073531,97.105845)" />
-  <text
-     x="312.51001"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="24.02"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2359"
-     transform="translate(-6.6073531,97.105845)">odor</text>
-  <text
-     x="348.39001"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="32.700001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2361"
-     transform="translate(-6.6073531,97.105845)">sound</text>
-  <text
-     x="384.26001"
-     y="257.22"
-     text-anchor="middle"
-     style="font-size:12px;font-family:Arial"
-     textLength="36.689999"
-     lengthAdjust="spacingAndGlyphs"
-     id="text2363"
-     transform="translate(-3.6073531,97.105845)">neither</text>
   <polyline
      points="47.41,242.13 47.41,50.90 "
      style="stroke-width:1.07;stroke-linecap:square"
@@ -1636,35 +1688,27 @@
      id="text2391"
      transform="matrix(1.1312476,0,0,1,-51.229183,-55.548691)">Cue</text>
   <text
-     x="442.06"
-     y="81.169998"
-     style="font-size:12px;font-family:Arial"
-     textLength="41.360001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text7075"
-     transform="translate(-279.71234,63.324214)">location</text>
+     xml:space="preserve"
+     style="font-size:12px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="6.8954849"
+     y="40.65345"
+     id="text1216"><tspan
+       sodipodi:role="line"
+       id="tspan1214"
+       x="6.8954849"
+       y="40.65345"
+       style="stroke-width:0.75"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;font-family:sans-serif;-inkscape-font-specification:sans-serif"
+   id="tspan1218">A</tspan>.</tspan></text>
   <text
-     x="442.06"
-     y="81.169998"
-     style="font-size:12px;font-family:Arial"
-     textLength="41.360001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text7077"
-     transform="translate(-399.63374,63.287871)">location</text>
-  <text
-     x="442.06"
-     y="81.169998"
-     style="font-size:12px;font-family:Arial"
-     textLength="41.360001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text7079"
-     transform="translate(-281.3326,273.26362)">location</text>
-  <text
-     x="442.06"
-     y="81.169998"
-     style="font-size:12px;font-family:Arial"
-     textLength="41.360001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text7081"
-     transform="translate(-401.82682,273.19822)">location</text>
+     xml:space="preserve"
+     style="font-size:16px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.75"
+     x="6.7661877"
+     y="149.15424"
+     id="text1232"><tspan
+       sodipodi:role="line"
+       id="tspan1230"
+       x="6.7661877"
+       y="149.15424"
+       style="stroke-width:0.75">B.</tspan></text>
 </svg>
