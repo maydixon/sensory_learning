@@ -2152,12 +2152,12 @@ Nemenyi_p.vals<- lapply(NemenyiList, function(x) x$p.value)
 ```{r}
 #Add cohort?
 # try geeglm( (might have quasipoisson option)
-#install.packages("geeglm")  #not abavilable this version of R...
+#install.packages("geeglm")  #not avavilable this version of R...
 #library(geeglm)
 #glmm speculation
 
 #test fit by ratio of 
-#df resid : teh residual degrees of freedom
+#df resid : the residual degrees of freedom
 #to deviance
 
 

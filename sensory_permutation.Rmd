@@ -121,7 +121,7 @@ hist_perm <- function(exp=exp, obs=obs, perms=perms, label=''){
 
 ```
 
-```{r}
+```{r load data}
 # set directory
 #setwd("~/Users/maydixon/GitHub/Sensory_learning/Sensory_learning_1")
 
@@ -141,6 +141,26 @@ View(d)
 first_choices1 <- read.csv("https://raw.githubusercontent.com/maydixon/sensory_learning/master/first_choices.csv", sep=",", header=TRUE, stringsAsFactors = F )
 View(first_choices1)
 ```
+
+
+Probability of passing test by chance
+```{r}
+perms <- 50000
+exp <-rep(NA, perms) 
+for (i in 1:perms) {
+  exp[i] <- sum(sample(c(F,F,F,T), 7, replace=T))
+}
+mean(exp>=5) 
+xp <-rep(NA, 1000) 
+for (i in 1:1000) {
+  exp[i] <- sum(sample(c(F,F,F,T), 7, replace=T))
+}
+mean(exp>=5)
+#Is that right??
+  
+```
+
+
 
 ```{r}
 # plot AJ data by bat
@@ -221,6 +241,7 @@ plot_preference <- function(species= "AJ", use_percent=T){
     ggtitle(ifelse(species=="AJ", expression(paste("frugivorous ", italic("Artibeus jamaicensis"))), 
                                   expression(paste("predatory ", italic("Lophostoma silvicolum")))))+
     theme_cowplot()+
+    theme(legend.position = "none") +
     # scale_color_manual(values=c('#1b9e77','dark grey','#d95f02','#7570b3'))
     
   # scale_color_manual(values=c('#c9cba3','#FFB833','#e26d5c','#723d46'))
@@ -240,12 +261,12 @@ plot_preference <- function(species= "AJ", use_percent=T){
 (aj.results <- plot_preference(species="AJ", use_percent = F))
 
 #export plot
-# walk(devices, ~ ggsave(filename = paste("aj.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
+ walk(devices, ~ ggsave(filename = paste("aj.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
 
 # use that function plot preferences for L
 (l.results <- plot_preference(species="L", use_percent= F))
 # export plot 
-# walk(devices, ~ ggsave(filename = paste("l.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
+ walk(devices, ~ ggsave(filename = paste("l.results", .x), device = .x, units = "mm", width = 173, height = 100 ))
 ```
 
 # Did bats have cue preferences on their first visits? 
@@ -287,7 +308,8 @@ firstvisits <-
   xlab("Cues") +
   scale_x_discrete(  labels=c("location" = "loc", "smell" ="odor", "sound" = "sound",  "neither" = "neither")) +
    scale_fill_manual(name = "First visit", values=c(loc, odr, snd, nthr)) +
-   theme_cowplot()
+   theme_cowplot() +
+  theme(legend.position = "none")
 list(firstvisits)
 }
 
@@ -328,7 +350,7 @@ obs <-
   mutate(effect= gsub(" ", " ", paste(Test, cue, sep=" - ")))  %>%  #identify trial, w removed spaces
   pull(diff,effect) #pull effect as "names" for obs
 
- 
+
 
 # numbers are AJ - L differences for:
 # location, neither, odor, scent, for each test
@@ -377,38 +399,122 @@ uts="in"
 # Loc V Odor 
 # get p-value for species difference for location (column 1)
 (hist_LocationvOdor_control <- hist_perm(exp= exp[,1], obs= obs[1], perms=perms))
-ggsave(paste(paste("hist", names(obs[1]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[1]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 # get p-value for species difference for neither (column 2)
 (hist_LocationvOdor_location <- hist_perm(exp= exp[,2], obs= obs[2], perms=perms))
-ggsave(paste(paste("hist", names(obs[2]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[2]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 # get p-value for species difference for odor (column 3)
 (hist_LocationvOdor_odor <- hist_perm(exp= exp[,3], obs= obs[3], perms=perms))
-ggsave(paste(paste("hist", names(obs[3]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[3]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 # Loc v Sound
 
 # get p-value for species difference for location (column 4)
 (hist_LocationvSound_control<- hist_perm(exp= exp[,4], obs= obs[4], perms=perms)) #wrong
-ggsave(paste(paste("hist", names(obs[4]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[4]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_LocationvSound_location <- hist_perm(exp= exp[,5], obs= obs[5], perms=perms)) #wrong
-ggsave(paste(paste("hist", names(obs[5]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[5]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_LocationvSound_sound   <- hist_perm(exp= exp[,6], obs= obs[6], perms=perms))
-ggsave(paste(paste("hist", names(obs[6]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[6]), ".png",sep = "_")), width = wd, units = uts, height = ht)
   # Sound V Odor
   
 (hist_SoundvOdor_control <- hist_perm(exp= exp[,7], obs= obs[7], perms=perms))
-ggsave(paste(paste("hist", names(obs[7]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[7]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_SoundvOdor_odor <- hist_perm(exp= exp[,8], obs= obs[8], perms=perms)  ) 
-ggsave(paste(paste("hist", names(obs[8]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[8]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
 (hist_SoundvOdor_sound <- hist_perm(exp= exp[,9], obs= obs[9], perms=perms)
 )
-ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")), width = wd, units = uts, height = ht)
+#ggsave(paste(paste("hist", names(obs[9]), ".png",sep = "_")), width = wd, units = uts, height = ht)
 
+
+
+# make summary of species differences in relative # of visits to each cue
+pct_difs <- d %>% 
+   mutate(cue = replace(cue, cue =="neither", "control")) %>% #trying to replace rename neither with control
+  group_by(Bat.ID, Test) %>%
+  pivot_wider(names_from = cue, values_from = visits) %>%
+  mutate(visits_trial = sum(c(location, sound, control, odor), na.rm = TRUE)) %>%#total visits in trial
+  pivot_longer(cols = c(location, sound, control, odor), names_to = "cue", values_to = "visits", values_drop_na = TRUE) %>%
+  mutate(prop_visit = visits/visits_trial*100) %>% ## shows the % of visits bat made to each cue type in a trial
+  ungroup() %>%
+  mutate(name= paste(cue, Test, sep="_"))  
+  
+sd_poold <- pct_difs %>%
+  group_by(name) %>%
+  summarize(sd_pool = sd(visits)) %>%
+  ungroup()
+ sd_poold  
+
+pct_difs <- left_join(pct_difs, sd_poold)%>% ungroup()# add full pooled sds to data
+
+#rm(sd_pool)
+
+pct_difs <- pct_difs %>% 
+  group_by(Species, cue, Test) %>% #get the average proportion of visits, and the spp difference in proportion visits
+  
+  summarize(mean_visits= mean(visits), sd = sd(visits), sd_pool = first(sd_pool), mean_prop = mean(prop_visit), n = n()) %>% 
+  pivot_wider(names_from = Species, values_from= c(mean_visits, n, sd, sd_pool = sd_pool, mean_prop)) %>% 
+  mutate(diff_visits = mean_visits_AJ - mean_visits_L, diff_prop= mean_prop_AJ - mean_prop_L) %>% 
+  mutate(cohensd = (abs(diff_visits)) / (sqrt(((n_AJ - 1) *sd_AJ^2 + (n_L-1) * sd_L^2) / ((n_AJ - 1) + (n_L-1))))) %>%#cohens d calculation with sd calculated from each group seperately
+mutate(cohensd2 = abs(diff_visits)/sd_pool_AJ) %>%
+  mutate(name= paste(cue, Test, sep="_")) %>%
+  
+  arrange(Test,cue) %>% 
+  relocate(c(Test, cue,diff_visits, diff_prop, mean_prop_AJ, mean_prop_L, cohensd,cohensd2, n_AJ, n_L))
+
+pct_difs
+# write.csv(pct_difs, "species_comparison_differences_propvisits.csv")
+
+#two cohen's d methods produce slightly different results! what about with built in function? 
+
+cohens3 <- d %>%
+   mutate(cue = replace(cue, cue =="neither", "control")) %>%
+  mutate(name= paste(cue, Test, sep="_"))  %>% 
+  
+  group_by(name) %>%
+ cohens_d(visits ~ Species) %>% select(name, effsize)
+  
+compare_cohens <- left_join(pct_difs, cohens3) %>% 
+  relocate(cohensd,cohensd2, effsize )
+
+# still have to try to get cohen's d using sd_pool (mean diff bt group / pooled sd)
+```
+
+```{r}
+#cohen's d calculation code reasoning
+## 
+ # find % visits to each cue / bat = visits to cue/ total visits in trial
+ # find avg % visits / cue/ trial type/ species
+#  find difference in average % visits
+# also, calculate pooled sd (to calculate cohen's d that way)
+# also just calculate cohen's d using the full data
+ 
+ 
+# ### cohen's d calculation broken down: #####
+# #from https://stats.stackexchange.com/questions/151781/cohens-d-calculation-in-r?rq=1
+# lx <- n1- 1 #x
+# ly <- n2- 1 #x
+# md  <- abs(m1-m2)    #    ## mean difference (numerator)
+# csd <- lx * s1^2 + ly * s2^2
+# csd <- csd/(lx + ly)
+# csd <- sqrt(csd)                     ## common sd computation
+# 
+# cd  <- md/csd                        ## cohen's d
+# cd
+# 
+# #cohen's d calculation in the above equation
+# lx <- (n_AJ - 1)
+# ly <- (n_L-1)
+# md <- (abs(diff))
+# csd <- ((n_AJ - 1) *sd_AJ^2 + (n_L-1) * sd_L^2)
+# csd <- ((n_AJ - 1) *sd_AJ^2 + (n_L-1) * sd_L^2) / ((n_AJ - 1) + (n_L-1))
+# csd <- (sqrt(((n_AJ - 1) *sd_AJ^2 + (n_L-1) * sd_L^2) / ((n_AJ - 1) + (n_L-1))))
+# cd <- (abs(diff)) / (sqrt(((n_AJ - 1) *sd_AJ^2 + (n_L-1) * sd_L^2) / ((n_AJ - 1) + (n_L-1))))
 
 
 ###
